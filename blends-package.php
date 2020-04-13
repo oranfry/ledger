@@ -2,5 +2,6 @@
 return (object) [
     'blends' => [
         'ledger',
+        'spending',
     ],
 ];
