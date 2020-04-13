@@ -5,7 +5,7 @@ class ledger extends \Blend
 {
     public function __construct()
     {
-        $this->label = 'Ledger';
+        $this->label = 'Transactions';
         $this->linetypes = ['plaintransaction'];
         $this->groupby = 'date';
         $this->fields = [
