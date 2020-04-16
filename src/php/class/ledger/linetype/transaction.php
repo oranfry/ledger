@@ -1,7 +1,7 @@
 <?php
-namespace linetype;
+namespace ledger\linetype;
 
-class plaintransaction extends \Linetype
+class transaction extends \Linetype
 {
     public function __construct()
     {

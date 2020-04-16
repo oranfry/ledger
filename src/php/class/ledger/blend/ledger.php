@@ -1,5 +1,5 @@
 <?php
-namespace blend;
+namespace ledger\blend;
 
 class ledger extends \Blend
 {

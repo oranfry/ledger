@@ -1,5 +1,5 @@
 <?php
-namespace blend;
+namespace ledger\blend;
 
 class spending extends \Blend
 {
