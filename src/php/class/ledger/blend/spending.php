@@ -9,7 +9,7 @@ class spending extends \Blend
         $this->amountltzero = true;
         $this->past = false;
         $this->cum = false;
-        $this->linetypes = ['plaintransaction'];
+        $this->linetypes = ['transaction'];
         $this->groupby = 'account';
         $this->fields = [
             (object) [
