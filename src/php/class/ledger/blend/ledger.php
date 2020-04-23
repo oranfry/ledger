@@ -32,13 +32,6 @@ class ledger extends \Blend
                 'sacrifice' => true,
             ],
             (object) [
-                'name' => 'parenttype',
-                'type' => 'icon',
-                'derived' => true,
-                'translate' => [],
-                'customlink' => '"/line?type={$parenttype}&id={$parentid}&back=' . base64_encode($_SERVER['REQUEST_URI']) . '"',
-            ],
-            (object) [
                 'name' => 'amount',
                 'type' => 'number',
                 'summary' => 'sum',
