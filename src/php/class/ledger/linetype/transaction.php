@@ -22,31 +22,31 @@ class transaction extends \Linetype
                 'name' => 'date',
                 'type' => 'date',
                 'groupable' => true,
-                'fuse' => 't.date',
+                'fuse' => '{t}.date',
             ],
             (object) [
                 'name' => 'account',
                 'type' => 'text',
-                'fuse' => 't.account',
+                'fuse' => '{t}.account',
             ],
             (object) [
                 'name' => 'description',
                 'type' => 'text',
-                'fuse' => 't.description',
+                'fuse' => '{t}.description',
             ],
             (object) [
                 'name' => 'amount',
                 'type' => 'number',
                 'dp' => 2,
                 'summary' => 'sum',
-                'fuse' => 't.amount',
+                'fuse' => '{t}.amount',
             ],
         ];
         $this->unfuse_fields = [
-            't.date' => ':date',
-            't.amount' => ':amount',
-            't.account' => ':account',
-            't.description' => ':description',
+            '{t}.date' => ':{t}_date',
+            '{t}.amount' => ':{t}_amount',
+            '{t}.account' => ':{t}_account',
+            '{t}.description' => ':{t}_description',
         ];
     }
 
