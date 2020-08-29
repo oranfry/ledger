@@ -8,7 +8,6 @@ class transaction extends \Linetype
         $this->label = 'Transaction';
         $this->icon = 'dollar';
         $this->table = 'transaction';
-        $this->fields = null;
         $this->summaries = null;
         $this->showass = ['list', 'calendar', 'graph'];
         $this->fields = [
