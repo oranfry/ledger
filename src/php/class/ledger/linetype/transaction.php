@@ -12,12 +12,6 @@ class transaction extends \Linetype
         $this->showass = ['list', 'calendar', 'graph'];
         $this->fields = [
             (object) [
-                'name' => 'icon',
-                'type' => 'icon',
-                'fuse' => "'dollar'",
-                'derived' => true,
-            ],
-            (object) [
                 'name' => 'date',
                 'type' => 'date',
                 'groupable' => true,
