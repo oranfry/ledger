@@ -180,7 +180,8 @@
                     } else {
                         $value = @$line->{$field->name} ?: @$_GET[$field->name] ?: @$field->default;
                     }
-                    $options = @$suggested_values[$field->name];
+
+                    $options = @$field->options;
 
                     if ($value && $options && !in_array($value, $options)) {
                         array_unshift($options, $value);
@@ -199,7 +200,7 @@
             <div class="form-row">
                 <div class="form-row__label">&nbsp;</div>
                 <div class="form-row__value">
-                    <button class="button button--main" type="button">Save</button>
+                    <button class="saveline button button--main" type="button">Save</button>
                 </div>
                 <div style="clear: both"></div>
             </div>
@@ -224,6 +225,7 @@
                             <input type="checkbox" data-for="<?= $field->name ?>">
                         </div>
                     <?php endif ?>
+                    <?php $options = @$field->options; ?>
                     <?php $bulk = true; require $field_inc; unset($bulk); ?>
                 </div>
                 <div style="clear: both"></div>
@@ -233,7 +235,7 @@
         <div class="form-row">
             <div class="form-row__label">&nbsp;</div>
             <div class="form-row__value">
-                <button type="button" class="button button--main">Save</button>
+                <button type="button" class="bulksave button button--main">Save</button>
             </div>
             <div style="clear: both"></div>
         </div>

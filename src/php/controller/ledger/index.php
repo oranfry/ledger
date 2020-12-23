@@ -25,15 +25,22 @@ $past_filters = [
     (object) ['field' => 'date', 'cmp' => '<', 'value' => $daterange->from],
 ];
 
+$accounts = array_map(function($j) {
+    return $j->item;
+}, $api->get('list', $api->search('lists', [(object)['field' => 'name', 'cmp' => '=', 'value' => 'accounts']])[0]->id)->listitems);
+sort($accounts);
+
+$jars = null;
+
 if (@filter_objects($ledger->fields, 'name', 'is', 'jar')[0]) {
     ContextVariableSet::put('jar', $jarFilter = new Value('jar'));
 
-    $jars = $api->search('managejars');
-    $options = array_map(function($j) {
-        return $j->jar;
-    }, $jars);
-    sort($options);
-    $jarFilter->options = $options;
+    $jars = array_map(function($j) {
+        return $j->item;
+    }, $api->get('list', $api->search('lists', [(object)['field' => 'name', 'cmp' => '=', 'value' => 'jars']])[0]->id)->listitems);
+    sort($jars);
+
+    $jarFilter->options = $jars;
 
     if ($jarFilter->value) {
         $filter = (object) ['field' => 'jar', 'cmp' => '=', 'value' => $jarFilter->value];
@@ -114,7 +121,21 @@ $linetypes = array_map(function($type) {
 
 $title = 'Ledger &bull; ' . $daterange->getTitle() . (@$jarFilter->value ? ' &bull; ' . $jarFilter->value : '') . (@$superjarFilter->value ? ' &bull; ' . $superjarFilter->value : '');
 
+foreach ($linetypes as $linetype) {
+    foreach ($linetype->fields as $field) {
+        if (in_array($field->name, ['jar', 'from', 'to'])) {
+            $field->options = $jars;
+        }
+
+        if ($field->name == 'account') {
+            $field->options = $accounts;
+        }
+    }
+}
+
 return [
+    'currentgroup' => $currentgroup,
+    'defaultgroup' => $defaultgroup,
     'fields' => $fields,
     'generic' => $generic,
     'groupfield' => 'date',
@@ -125,8 +146,6 @@ return [
     'records' => $records,
     'summaries' => $summaries,
     'title' => $title,
-    'currentgroup' => $currentgroup,
-    'defaultgroup' => $defaultgroup,
 ];
 
 function addlink($type, $group, $groupfield, $defaultgroup, $parent_query, $prepop = [])

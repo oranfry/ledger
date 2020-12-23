@@ -100,7 +100,7 @@
     });
     $('.select-column input[type="checkbox"], .selectall').on('click', refreshDisplayedLineEditor);
 
-    $('.edit-form button').on('click', function(e) {
+    $('.edit-form .saveline').on('click', function(e) {
         e.preventDefault();
 
         var $line = $(this).closest('.line');
@@ -152,7 +152,7 @@
         });
     });
 
-    $('.bulk-edit-form button').on('click', function(e){
+    $('.bulk-edit-form .bulksave').on('click', function(e){
         e.preventDefault();
 
         var $editForm = $(this).closest('form');
@@ -229,6 +229,21 @@
             reader.readAsBinaryString(file);
         });
     });
+
+    $('.delete-selected').on('click', function() {
+        var $selected = getSelected();
+
+        if (!$selected.length) {
+            return;
+        }
+
+        if (confirm('Delete ' + $selected.length + ' lines?')) {
+            blends_api.blendDelete('ledger', getSelectionQuery($selected), function(){
+                window.location.reload();
+            });
+        }
+    });
+
 
     $('.select-column input').prop('checked', false);
 
