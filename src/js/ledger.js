@@ -231,5 +231,14 @@
     });
 
     $('.select-column input').prop('checked', false);
-    $('.line').css({top: $('.easy-table').offset().top + 'px', left: ($('.easy-table').offset().left + $('.easy-table').outerWidth() + 30) + 'px'});
+
+    var onResize = function() {
+        $('.line').css({top: $('.easy-table').offset().top + 'px', left: ($('.easy-table').offset().left + $('.easy-table').outerWidth() + 30) + 'px'});
+    }
+
+    var resizeTimer = null;
+
+    $(window).on('resize', function(){ clearTimeout(resizeTimer); resizeTimer = setTimeout(onResize, 300); });
+
+    onResize();
 })();
