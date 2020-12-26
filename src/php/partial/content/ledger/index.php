@@ -132,6 +132,7 @@
                 <div class="form-row__value">
                     <?php $field = (object) ['name' => 'id'] ?>
                     <?php $value = @$line->id; ?>
+                    <?php unset($options); ?>
                     <?php require search_plugins("src/php/partial/fieldtype/text.php"); ?>
                 </div>
                 <div style="clear: both"></div>
@@ -142,6 +143,7 @@
                     <div class="form-row__value">
                         <?php $field = (object) ['name' => 'user'] ?>
                         <?php $value = @$line->user ?? @$_GET['user']; ?>
+                        <?php unset($options); ?>
                         <?php require search_plugins("src/php/partial/fieldtype/text.php"); ?>
                     </div>
                     <div style="clear: both"></div>
