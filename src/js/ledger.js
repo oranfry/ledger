@@ -248,7 +248,9 @@
     $('.select-column input').prop('checked', false);
 
     var onResize = function() {
-        $('.line').css({top: $('.easy-table').offset().top + 'px', left: ($('.easy-table').offset().left + $('.easy-table').outerWidth() + 30) + 'px'});
+        if ($('.easy-table').length) {
+            $('.line').css({top: $('.easy-table').offset().top + 'px', left: ($('.easy-table').offset().left + $('.easy-table').outerWidth() + 30) + 'px'});
+        }
     }
 
     var resizeTimer = null;

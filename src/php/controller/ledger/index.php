@@ -147,27 +147,3 @@ return [
     'summaries' => $summaries,
     'title' => $title,
 ];
-
-function addlink($type, $group, $groupfield, $defaultgroup, $parent_query, $prepop = [])
-{
-    $url = "/ledger/{$type}";
-
-    $query = $prepop;
-
-    if ($groupfield) {
-        $query[$groupfield] = $group ?: @$defaultgroup;
-    }
-
-    $query['back'] = base64_encode($_SERVER['REQUEST_URI']);
-
-    $url .= '?' . http_build_query($query) . (@$parent_query ? '&' . $parent_query : '');
-
-    return $url;
-}
-
-function editlink($id, $type)
-{
-    $back = base64_encode($_SERVER['REQUEST_URI']);
-
-    return "/ledger/{$type}/{$id}?back={$back}";
-}
