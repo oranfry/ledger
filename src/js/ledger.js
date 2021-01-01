@@ -249,7 +249,7 @@
 
     var onResize = function() {
         if ($('.easy-table').length) {
-            $('.line').css({top: $('.easy-table').offset().top + 'px', left: ($('.easy-table').offset().left + $('.easy-table').outerWidth() + 30) + 'px'});
+            $('.floatline').css({top: $('.easy-table').offset().top + 'px', left: ($('.easy-table').offset().left + $('.easy-table').outerWidth() + 30) + 'px'});
         }
     }
 

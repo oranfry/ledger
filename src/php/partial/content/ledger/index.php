@@ -124,7 +124,7 @@
 
 <?php foreach ($linetypes as $linetype): ?>
     <?php if ($linetype instanceof \jars\linetype\Transferout): ?><?php continue; ?><?php endif ?>
-    <div data-type="<?php echo $linetype->name ?>" class="line edit-form" style="display: none">
+    <div data-type="<?php echo $linetype->name ?>" class="line floatline edit-form" style="display: none">
         <h3><?= @['transferin' => 'Transfer', 'transaction' => 'Transaction'][$linetype->name] ?? ucfirst($linetype->name) ?></h3>
         <form method="post">
             <div class="form-row">
