@@ -3,8 +3,7 @@
 use contextvariableset\Daterange;
 use contextvariableset\Value;
 
-$api = get_api_client();
-$ledger = $api->blend('ledger');
+$ledger = Blend::load(AUTH_TOKEN, 'ledger');
 $fields = filter_objects($ledger->fields, 'name', 'notin', ['type', 'superjar']);
 $mask_fields = ['date'];
 
@@ -16,18 +15,19 @@ array_unshift($fields, (object) [
 
 ContextVariableSet::put('daterange', $daterange = new Daterange('daterange'));
 
-$filters = [
-    (object) ['field' => 'date', 'cmp' => '>=', 'value' => $daterange->from],
-    (object) ['field' => 'date', 'cmp' => '<=', 'value' => $daterange->to],
-];
+$filters = [];
+$past_filters = [];
 
-$past_filters = [
-    (object) ['field' => 'date', 'cmp' => '<', 'value' => $daterange->from],
-];
+if (@$daterange->from) {
+    $filters[] = (object) ['field' => 'date', 'cmp' => '>=', 'value' => $daterange->from];
+    $past_filters[] = (object) ['field' => 'date', 'cmp' => '<', 'value' => $daterange->from];
+}
 
-$accounts = array_map(function($j) {
-    return $j->item;
-}, $api->get('list', $api->search('lists', [(object)['field' => 'name', 'cmp' => '=', 'value' => 'accounts']])[0]->id)->listitems);
+if (@$daterange->to) {
+    $filters[] = (object) ['field' => 'date', 'cmp' => '<=', 'value' => $daterange->to];
+}
+
+$accounts = get_flat_list('accounts');
 sort($accounts);
 
 $jars = null;
@@ -35,9 +35,7 @@ $jars = null;
 if (@filter_objects($ledger->fields, 'name', 'is', 'jar')[0]) {
     ContextVariableSet::put('jar', $jarFilter = new Value('jar'));
 
-    $jars = array_map(function($j) {
-        return $j->item;
-    }, $api->get('list', $api->search('lists', [(object)['field' => 'name', 'cmp' => '=', 'value' => 'jars']])[0]->id)->listitems);
+    $jars = get_flat_list('jars');
     sort($jars);
 
     $jarFilter->options = $jars;
@@ -62,8 +60,13 @@ if (@filter_objects($ledger->fields, 'name', 'is', 'jar')[0]) {
     }
 }
 
-$past_summary = $api->summary('ledger', $past_filters);
-$records = $api->search('ledger', $filters);
+if (@$daterange->from) {
+    $past_summary = $ledger->summary(AUTH_TOKEN, $past_filters);
+} else {
+    $past_summary = (object) ['amount' => 0];
+}
+
+$records = $ledger->search(AUTH_TOKEN, $filters);
 
 usort($records, function($a, $b){
     return strcmp($a->date, $b->date);
