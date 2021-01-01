@@ -88,6 +88,8 @@
     $('.trigger-add-line').on('click', function(event){
         event.stopPropagation();
         event.preventDefault();
+        $('.linerow').removeClass('selected').find('.select-column [type="checkbox"]').prop('checked', false);
+
         var $plus = $(this);
         var linetype = $plus.attr('data-type');
         var $line = $('.line[data-type="' + linetype + '"]');
