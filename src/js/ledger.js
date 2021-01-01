@@ -135,7 +135,7 @@
         $fileInputs.each(function(){
             var $input = $(this);
             var file = $input[0].files[0];
-            delete data[$input.attr('name')];
+            delete line[$input.attr('name')];
 
             if (!file) {
                 numLoadedFiles++;
@@ -150,7 +150,7 @@
             var reader = new FileReader();
 
             reader.onload = function(event) {
-                data[$input.attr('name')] = btoa(event.target.result);
+                line[$input.attr('name')] = btoa(event.target.result);
                 numLoadedFiles++;
 
                 if (numLoadedFiles == $fileInputs.length) {
