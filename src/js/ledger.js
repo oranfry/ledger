@@ -24,6 +24,14 @@
             for (const property in line) {
                 var $property = $line.find('[name="' + property + '"]');
 
+                if ($property.is('select')) {
+                    $property.find('[data-adhoc]').remove();
+
+                    if (line[property] && !$property.find('option[value="' + line[property] + '"]').length) {
+                        $property.prepend('<option data-adhoc="1" value="' + line[property] + '" selected="selected">' + line[property] + '</option>');
+                    }
+                }
+
                 $property.val(line[property]);
             }
         });
