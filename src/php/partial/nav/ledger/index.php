@@ -9,3 +9,5 @@
         <i class="icon icon--gray icon--times delete-selected"></i>
     </div>
 <?php endif ?>
+
+<?php $showas->display(); ?>

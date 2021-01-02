@@ -1,6 +1,6 @@
 <?php
-
 use contextvariableset\Daterange;
+use contextvariableset\Showas;
 use contextvariableset\Value;
 
 $ledger = Blend::load(AUTH_TOKEN, 'ledger');
@@ -136,6 +136,14 @@ foreach ($linetypes as $linetype) {
     }
 }
 
+$showas = new Showas("ledger_showas");
+$showas->options = ['list', 'summaries', 'graph'];
+ContextVariableSet::put('showas', $showas);
+
+if (!$showas->value) {
+    $showas->value = 'list';
+}
+
 return [
     'currentgroup' => $currentgroup,
     'defaultgroup' => $defaultgroup,
@@ -148,5 +156,6 @@ return [
     'mask_fields' => $mask_fields,
     'records' => $records,
     'summaries' => $summaries,
+    'showas' => $showas,
     'title' => $title,
 ];
