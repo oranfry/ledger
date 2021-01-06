@@ -72,6 +72,12 @@ usort($records, function($a, $b){
     return strcmp($a->date, $b->date);
 });
 
+if (!count(filter_objects($fields, 'name', 'is', 'broken')) || !count(array_filter($records, function($r) {
+    return (bool) $r->broken;
+}))) {
+    $mask_fields[] = 'broken';
+}
+
 $summaries = [
     'initial' => $past_summary,
 ];

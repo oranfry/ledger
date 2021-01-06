@@ -85,7 +85,7 @@
                     <tr
                         <?= @$parent ? "data-parent=\"{$parent}\"" : '' ?>
                         data-group="<?= $record->date ?>"
-                        class="linerow"
+                        class="linerow <?= $record->broken ? 'broken' : null ?>"
                         data-id="<?= $record->id ?>"
                         data-type="<?= $record->type ?>"
                     >
