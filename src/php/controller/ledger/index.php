@@ -37,7 +37,7 @@ if ($repeater->period) {
     ];
 }
 
-$accounts = get_flat_list('accounts');
+$accounts = get_flat_list('accounts') ?? [];
 sort($accounts);
 
 $jars = null;
@@ -45,7 +45,7 @@ $jars = null;
 if (@filter_objects($ledger->fields, 'name', 'is', 'jar')[0]) {
     ContextVariableSet::put('jar', $jarFilter = new Value('jar'));
 
-    $jars = get_flat_list('jars');
+    $jars = get_flat_list('jars') ?? [];
     sort($jars);
 
     $jarFilter->options = $jars;
