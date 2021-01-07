@@ -11,3 +11,5 @@
 <?php endif ?>
 
 <?php $showas->display(); ?>
+<?php $repeater->display(); ?>
+<br><br>

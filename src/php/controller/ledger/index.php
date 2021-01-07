@@ -1,5 +1,6 @@
 <?php
 use contextvariableset\Daterange;
+use contextvariableset\Repeater;
 use contextvariableset\Showas;
 use contextvariableset\Value;
 
@@ -14,6 +15,7 @@ array_unshift($fields, (object) [
 ]);
 
 ContextVariableSet::put('daterange', $daterange = new Daterange('daterange'));
+ContextVariableSet::put('repeater', $repeater = new Repeater('ledger_repeater'));
 
 $filters = [];
 $past_filters = [];
@@ -25,6 +27,14 @@ if (@$daterange->from) {
 
 if (@$daterange->to) {
     $filters[] = (object) ['field' => 'date', 'cmp' => '<=', 'value' => $daterange->to];
+}
+
+if ($repeater->period) {
+      $filters[] = (object) [
+        'cmp' => '*=',
+        'field' => 'date',
+        'value' => $repeater->render(),
+    ];
 }
 
 $accounts = get_flat_list('accounts');
@@ -163,7 +173,8 @@ return [
     'linetypes' => $linetypes,
     'mask_fields' => $mask_fields,
     'records' => $records,
-    'summaries' => $summaries,
+    'repeater' => $repeater,
     'showas' => $showas,
+    'summaries' => $summaries,
     'title' => $title,
 ];
