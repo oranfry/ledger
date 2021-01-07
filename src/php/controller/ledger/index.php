@@ -150,6 +150,8 @@ if (!$showas->value) {
     $showas->value = 'list';
 }
 
+$mask_fields = array_keys(array_intersect_key($mask_fields, array_flip(map_objects($fields, 'name'))));
+
 return [
     'currentgroup' => $currentgroup,
     'defaultgroup' => $defaultgroup,
