@@ -10,6 +10,20 @@
         $('.linerow').not($linerow).removeClass('selected').find('.select-column [type="checkbox"]').prop('checked', false);
         $linerow.addClass('selected').find('.select-column [type="checkbox"]').prop('checked', true);
 
+        $line.find('input[type="file"]').each(function(){
+            var $controls = $(this).closest('.file-field-controls');
+            var $actions = $controls.find('.file-field-controls__actions');
+            var $inputs = $controls.find('.file-field-controls__input');
+            var $downloadlink = $controls.find('a');
+            var $cancel = $controls.find('.file-field-controls__cancel');
+
+            $(this).val(null);
+            $actions.hide();
+            $cancel.hide();
+            $inputs.show();
+            $downloadlink.removeAttr('href');
+        });
+
         blends_api.lineGet(linetype, id, function(line) {
             $line.attr('data-id', id).show();
             $('.line').removeAttr('data-id').not($line).hide();
@@ -21,7 +35,8 @@
                 delete line.to;
             }
 
-            for (const property in line) {
+            for (const _property in line) {
+                var property = _property.replace(/_path$/, '');
                 var $property = $line.find('[name="' + property + '"]');
 
                 if ($property.is('select')) {
@@ -32,7 +47,22 @@
                     }
                 }
 
-                $property.val(line[property]);
+                if ($property.is('[type="file"]')) {
+                    var $controls = $property.closest('.file-field-controls');
+                    var $actions = $controls.find('.file-field-controls__actions');
+                    var $inputs = $controls.find('.file-field-controls__input');
+                    var $downloadlink = $controls.find('a');
+                    var $cancel = $controls.find('.file-field-controls__cancel');
+
+                    if (line[property + '_path']) {
+                        $cancel.show();
+                        $actions.show();
+                        $inputs.hide();
+                        $downloadlink.attr('href', '/api/download/' + line[property + '_path']);
+                    }
+                } else {
+                    $property.val(line[property]);
+                }
             }
         });
     };
