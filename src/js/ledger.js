@@ -1,6 +1,23 @@
 (function() {
     var $generic = $('.line[data-type="generic"]');
 
+    var clearInputs = function() {
+        $(this).find('input[type="file"]').each(function(){
+            var $controls = $(this).closest('.file-field-controls');
+            var $actions = $controls.find('.file-field-controls__actions');
+            var $inputs = $controls.find('.file-field-controls__input');
+            var $downloadlink = $controls.find('a');
+            var $cancel = $controls.find('.file-field-controls__cancel');
+
+            $actions.hide();
+            $cancel.hide();
+            $inputs.show();
+            $downloadlink.removeAttr('href');
+        });
+
+        $(this).find('[name]').val(null);
+    };
+
     var selectOneLine = function() {
         var $linerow = $(this);
         var linetype = $linerow.attr('data-type');
@@ -8,21 +25,15 @@
         var $line = $('.line[data-type="' + (linetype == 'transferout' && 'transferin' || linetype) + '"]');
 
         $('.linerow').not($linerow).removeClass('selected').find('.select-column [type="checkbox"]').prop('checked', false);
+
         $linerow.addClass('selected').find('.select-column [type="checkbox"]').prop('checked', true);
 
-        $line.find('input[type="file"]').each(function(){
-            var $controls = $(this).closest('.file-field-controls');
-            var $actions = $controls.find('.file-field-controls__actions');
-            var $inputs = $controls.find('.file-field-controls__input');
-            var $downloadlink = $controls.find('a');
-            var $cancel = $controls.find('.file-field-controls__cancel');
+        $line.find('.saveline').show();
+        $line.find('.bulkadd').hide();
+        $line.find('[name="id"]').closest('.form-row').show();
 
-            $(this).val(null);
-            $actions.hide();
-            $cancel.hide();
-            $inputs.show();
-            $downloadlink.removeAttr('href');
-        });
+        clearInputs.apply($line);
+        $line.find('[name="date"]').closest('.form-row').show();
 
         blends_api.lineGet(linetype, id, function(line) {
             $line.attr('data-id', id).show();
@@ -115,6 +126,7 @@
     };
 
     $('.linerow').on('click', selectOneLine);
+
     $('.trigger-add-line').on('click', function(event){
         event.stopPropagation();
         event.preventDefault();
@@ -124,7 +136,11 @@
         var linetype = $plus.attr('data-type');
         var $line = $('.line[data-type="' + linetype + '"]');
 
-        $('.line').find('[name]').val(null);
+        $line.find('.saveline').show();
+        $line.find('.bulkadd').hide();
+        $line.find('[name="id"]').closest('.form-row').hide();
+
+        clearInputs.apply($line);
 
         var fields = $line.find('[name]:not([type="submit"])').map(function(){
             return $(this).attr('name');
@@ -138,6 +154,7 @@
         $line.show();
         closeModals();
     });
+
     $('.select-column input[type="checkbox"], .selectall').on('click', refreshDisplayedLineEditor);
 
     $('.edit-form .saveline').on('click', function(e) {
@@ -145,7 +162,6 @@
 
         var $line = $(this).closest('.line');
         var $form = $(this).closest('form');
-        var $linerow = $('tr[data-type="' + $line.attr('data-type') + '"][data-id="' + $line.attr('data-id') + '"]');
         var formData = new FormData($form[0]);
         var line = Object.fromEntries(formData);
 
@@ -192,49 +208,25 @@
         });
     });
 
-    $('.bulk-edit-form .bulksave').on('click', function(e){
+    $('.edit-form .bulkadd').on('click', function(e){
         e.preventDefault();
 
-        var $editForm = $(this).closest('form');
-        var form = $editForm[0];
+        var $line = $(this).closest('.line');
         var data = {};
-        var blend = $editForm.data('blend');
-        var $selected = getSelected();
-        var query;
-        var $fileInputs = $editForm.find('input[type="file"]');
+        var linetype = $line.attr('data-type');
 
-        $editForm.find("input[data-for]:checked").each(function() {
-            var rel_field = $(this).attr('data-for');
-            var $rel_field = $editForm.find('[name="' + rel_field + '"]');
-
-            data[rel_field] = $rel_field.val();
+        $line.find("[name]").each(function() {
+            data[$(this).attr('name')] = $(this).val();
         });
 
-        $fileInputs.each(function() {
-            var rel_field = $(this).attr('name') + '_delete';
-
-            $editForm.find('[name="' + rel_field + '"]').each(function(){
-                data[rel_field] = $(this).val();
-            });
-        });
-
-        if (!Object.keys(data).length && !$fileInputs.length) {
-            closeModals();
-            return;
-        }
-
-        if ($selected.length) {
-            query = getSelectionQuery($selected);
-        } else {
-            query = current_filter;
-        }
+        delete data.id;
+        delete data.date;
 
         var handleSave = function() {
-            blends_api.updateBlend('ledger', query, data, function(){
-                window.location.reload();
-            });
+            blends_api.linetypeAdd(linetype, repeater, range_from, range_to, data);
         };
 
+        var $fileInputs = $line.find('input[type="file"]');
         var numLoadedFiles = 0;
 
         if (!$fileInputs.length) {
@@ -244,6 +236,7 @@
         $fileInputs.each(function(){
             var $input = $(this);
             var file = $input[0].files[0];
+            delete data[$input.attr('name')];
 
             if (!file) {
                 numLoadedFiles++;
@@ -284,6 +277,24 @@
         }
     });
 
+    $('.trigger-bulk-add').on('click', function(event){
+        closeModals();
+
+        $('.linerow').removeClass('selected').find('.select-column [type="checkbox"]').prop('checked', false);
+
+        var linetype = $(this).attr('data-type');
+        var $line = $('.line[data-type="' + (linetype == 'transferout' && 'transferin' || linetype) + '"]');
+
+        clearInputs.apply($line);
+
+        $line.find('.saveline').hide();
+        $line.find('.bulkadd').show();
+        $line.find('[name="id"]').closest('.form-row').hide();
+
+        $('.line').not($line).hide();
+        $line.show();
+        $line.find('[name="date"]').closest('.form-row').hide();
+    });
 
     $('.select-column input').prop('checked', false);
 

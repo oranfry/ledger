@@ -203,6 +203,7 @@
                 <div class="form-row__label">&nbsp;</div>
                 <div class="form-row__value">
                     <button class="saveline button button--main" type="button">Save</button>
+                    <button class="bulkadd button button--main" type="button" style="display: none">Bulk Add</button>
                 </div>
                 <div style="clear: both"></div>
             </div>
@@ -210,7 +211,7 @@
     </div>
 <?php endforeach ?>
 
-<div data-type="generic" class="line bulk-edit-form" style="display: none">
+<div data-type="generic" class="line floatline bulk-edit-form" style="display: none">
     <form>
         <?php foreach ($fields as $field): ?>
             <?php $field_inc = search_plugins("src/php/partial/fieldtype/{$field->type}.php"); ?>

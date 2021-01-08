@@ -11,5 +11,21 @@
 </div>
 
 <?php $showas->display(); ?>
-<?php $repeater->display(); ?>
-<br><br>
+
+<div class="navset">
+    <?php $repeater->display(); ?>
+    <?php if ($repeater->period): ?>
+        <?php if (count($linetypes) == 1): ?>
+            <i class="icon icon--gray icon--plus trigger-bulk-add" data-type="<?= $linetypes[0]->name ?>"></i>
+        <?php elseif (count($linetypes) > 1): ?>
+            <div class="inline-rel">
+                <div class="inline-modal">
+                    <nav>
+                        <?php foreach ($linetypes as $linetype): ?><a href="#"><i class="icon icon--gray icon--<?= $linetype->icon ?> trigger-bulk-add" data-type="<?= $linetype->name ?>"></i></a><?php endforeach ?>
+                    </nav>
+                </div>
+                <i class="inline-modal-trigger icon icon--gray icon--plus"></i>
+            </div>
+        <?php endif ?>
+    <?php endif ?>
+</div>
