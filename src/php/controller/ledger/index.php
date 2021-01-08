@@ -160,7 +160,7 @@ if (!$showas->value) {
     $showas->value = 'list';
 }
 
-$mask_fields = array_keys(array_intersect_key($mask_fields, array_flip(map_objects($fields, 'name'))));
+$mask_fields = array_values(array_intersect($mask_fields, map_objects($fields, 'name')));
 
 return [
     'currentgroup' => $currentgroup,
