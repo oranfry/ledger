@@ -125,6 +125,7 @@
 <?php foreach ($linetypes as $linetype): ?>
     <?php if ($linetype instanceof \jars\linetype\Transferout): ?><?php continue; ?><?php endif ?>
     <div data-type="<?php echo $linetype->name ?>" class="line floatline edit-form" style="display: none">
+        <div class="lineclose">close</div>
         <h3><?= @['transferin' => 'Transfer', 'transaction' => 'Transaction'][$linetype->name] ?? ucfirst($linetype->name) ?></h3>
         <form method="post">
             <div class="form-row">
@@ -212,6 +213,8 @@
 <?php endforeach ?>
 
 <div data-type="generic" class="line floatline bulk-edit-form" style="display: none">
+    <div class="lineclose">close</div>
+    <h3>Multiple Selections</h3>
     <form>
         <?php foreach ($fields as $field): ?>
             <?php $field_inc = search_plugins("src/php/partial/fieldtype/{$field->type}.php"); ?>

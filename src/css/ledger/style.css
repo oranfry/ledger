@@ -1,7 +1,22 @@
 .floatline {
     position: fixed;
+    z-index: 2000;
 }
 
 .line h3 {
     margin-top: 0;
 }
+
+.lineclose {
+    position: absolute;
+    top: 1em;
+    right: 1em;
+    cursor: pointer;
+}
+
+@media screen (min-width: 1199px) {
+    .lineclose {
+        display: none;
+    }
+}
+

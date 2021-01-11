@@ -18,6 +18,12 @@
         $(this).find('[name]').val(null);
     };
 
+    var deselectAllLines = function() {
+        $('.linerow').removeClass('selected').find('.select-column [type="checkbox"]').prop('checked', false);
+        $('.line [name]').val(null);
+        $('.line').hide();
+    };
+
     var selectOneLine = function() {
         var $linerow = $(this);
         var linetype = $linerow.attr('data-type');
@@ -279,8 +285,7 @@
 
     $('.trigger-bulk-add').on('click', function(event){
         closeModals();
-
-        $('.linerow').removeClass('selected').find('.select-column [type="checkbox"]').prop('checked', false);
+        deselectAllLines();
 
         var linetype = $(this).attr('data-type');
         var $line = $('.line[data-type="' + (linetype == 'transferout' && 'transferin' || linetype) + '"]');
@@ -300,7 +305,11 @@
 
     var onResize = function() {
         if ($('.easy-table').length) {
-            $('.floatline').css({top: $('.easy-table').offset().top + 'px', left: ($('.easy-table').offset().left + $('.easy-table').outerWidth() + 30) + 'px'});
+            if ($(window).width() >= 1200) {
+                $('.floatline').css({top: $('.easy-table').offset().top + 'px', left: ($('.easy-table').offset().left + $('.easy-table').outerWidth() + 30) + 'px', width: ''});
+            } else {
+                $('.floatline').css({top: 0, left: 0, width: '100%'});
+            }
         }
     }
 
@@ -309,4 +318,8 @@
     $(window).on('resize', function(){ clearTimeout(resizeTimer); resizeTimer = setTimeout(onResize, 300); });
 
     onResize();
+
+    $('.lineclose').on('click', function() {
+        deselectAllLines();
+    });
 })();
