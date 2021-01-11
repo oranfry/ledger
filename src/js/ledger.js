@@ -308,7 +308,7 @@
             if ($(window).width() >= 1200) {
                 $('.floatline').css({top: $('.easy-table').offset().top + 'px', left: ($('.easy-table').offset().left + $('.easy-table').outerWidth() + 30) + 'px', width: ''});
             } else {
-                $('.floatline').css({top: 0, left: 0, width: '100%'});
+                $('.floatline').css({top: $('.navbar').outerHeight() + 'px', left: 0, width: '100%'});
             }
         }
     }
