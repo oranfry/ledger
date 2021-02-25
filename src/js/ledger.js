@@ -214,6 +214,83 @@
         });
     });
 
+    $('.bulk-edit-form .bulksave').on('click', function(e){
+        e.preventDefault();
+
+        var $form = $(this).closest('form');
+        var form = $form[0];
+        var data = {};
+        var $selected = getSelected();
+        var query;
+        var $fileInputs = $form.find('input[type="file"]');
+
+        $form.find("input[data-for]:checked").each(function() {
+            var rel_field = $(this).attr('data-for');
+            var $rel_field = $form.find('[name="' + rel_field + '"]');
+
+            data[rel_field] = $rel_field.val();
+        });
+
+        $fileInputs.each(function() {
+            var rel_field = $(this).attr('name') + '_delete';
+
+            $form.find('[name="' + rel_field + '"]').each(function(){
+                data[rel_field] = $(this).val();
+            });
+        });
+
+        if (!Object.keys(data).length && !$fileInputs.length) {
+            closeModals();
+            return;
+        }
+
+        if (!$selected.length) {
+            return;
+        }
+
+        query = getSelectionQuery($selected);
+
+        var handleSave = function() {
+            blends_api.updateBlend('ledger', query, data, function(){
+                window.location.reload();
+            });
+        };
+
+        var numLoadedFiles = 0;
+
+        if (!$fileInputs.length) {
+            handleSave();
+        }
+
+        $fileInputs.each(function(){
+            var $input = $(this);
+            var file = $input[0].files[0];
+
+            if (!file) {
+                numLoadedFiles++;
+
+                if (numLoadedFiles == $fileInputs.length) {
+                    handleSave();
+                }
+
+                return;
+            }
+
+            var reader = new FileReader();
+
+            reader.onload = function(event) {
+                data[$input.attr('name')] = btoa(event.target.result);
+                numLoadedFiles++;
+
+                if (numLoadedFiles == $fileInputs.length) {
+                    handleSave();
+                }
+            };
+
+            reader.readAsBinaryString(file);
+        });
+    });
+
     $('.edit-form .bulkadd').on('click', function(e){
         e.preventDefault();
 
