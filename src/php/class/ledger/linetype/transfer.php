@@ -1,35 +1,40 @@
 <?php
 namespace ledger\linetype;
 
-class transaction extends \Linetype
+class transfer extends \Linetype
 {
     public function __construct()
     {
-        $this->label = 'Transaction';
-        $this->table = 'transaction';
-        $this->icon = 'dollar';
+        $this->table = 'transfer';
+        $this->label = 'Internal Transfer';
+        $this->icon = 'arrowleftright';
         $this->fields = [
+            (object) [
+                'name' => 'icon',
+                'type' => 'icon',
+                'fuse' => "'arrowleftright'",
+                'derived' => true,
+            ],
             (object) [
                 'name' => 'date',
                 'type' => 'date',
-                'groupable' => true,
+                'id' => true,
                 'fuse' => '{t}.date',
             ],
             (object) [
-                'name' => 'account',
+                'name' => 'from',
                 'type' => 'text',
-                'fuse' => '{t}.account',
+                'fuse' => '{t}.fromjar',
             ],
             (object) [
-                'name' => 'description',
+                'name' => 'to',
                 'type' => 'text',
-                'fuse' => '{t}.description',
+                'fuse' => '{t}.tojar',
             ],
             (object) [
                 'name' => 'amount',
                 'type' => 'number',
                 'dp' => 2,
-                'summary' => 'sum',
                 'fuse' => '{t}.amount',
             ],
         ];
@@ -38,13 +43,13 @@ class transaction extends \Linetype
                 'expression' => ':{t}_date',
                 'type' => 'date',
             ],
-            '{t}.account' => (object) [
-                'expression' => ':{t}_account',
+            '{t}.fromjar' => (object) [
+                'expression' => ':{t}_from',
                 'type' => 'varchar(40)',
             ],
-            '{t}.description' => (object) [
-                'expression' => ':{t}_description',
-                'type' => 'varchar(255)',
+            '{t}.tojar' => (object) [
+                'expression' => ':{t}_to',
+                'type' => 'varchar(40)',
             ],
             '{t}.amount' => (object) [
                 'expression' => ':{t}_amount',
@@ -59,6 +64,14 @@ class transaction extends \Linetype
 
         if (!@$line->date) {
             $errors[] = 'no date';
+        }
+
+        if (!@$line->from) {
+            $errors[] = 'no from jar';
+        }
+
+        if (!@$line->to) {
+            $errors[] = 'no to jar';
         }
 
         if (!@$line->amount) {

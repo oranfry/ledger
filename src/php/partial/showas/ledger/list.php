@@ -70,7 +70,7 @@
                                 <?= $grouptitle ?>
                                 <div style="float: right" class="inline-rel">
                                     <?php if (count($linetypes) > 1): ?>
-                                        <div class="inline-modal inline-modal--right"><nav><?php foreach ($linetypes as $linetype): ?><?php if ($linetype instanceof \jars\linetype\Transferout): ?><?php continue; ?><?php endif ?><a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $record->date ?>"><i class="icon icon--gray icon--<?= $linetype instanceof \jars\linetype\Transferin ? 'arrowleftright' : $linetype->icon ?>"></i></a><?php endforeach ?></nav></div>
+                                        <div class="inline-modal inline-modal--right"><nav><?php foreach ($linetypes as $linetype): ?><?php if ($linetype instanceof \ledger\linetype\Transferout): ?><?php continue; ?><?php endif ?><a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $record->date ?>"><i class="icon icon--gray icon--<?= $linetype instanceof \ledger\linetype\Transferin ? 'arrowleftright' : $linetype->icon ?>"></i></a><?php endforeach ?></nav></div>
                                         <a class="inline-modal-trigger"><i class="icon icon--gray icon--plus"></i></a>
                                     <?php elseif (count($linetypes) == 1): ?>
                                         <a href="#" class="trigger-add-line" data-type="<?= $record->date ?>"><i class="icon icon--gray icon--plus"></i></a>
@@ -115,15 +115,15 @@
 
     <nav>
         <?php foreach ($linetypes as $linetype): ?>
-            <?php if ($linetype instanceof \jars\linetype\Transferout): ?><?php continue; ?><?php endif ?>
-            <a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $defaultgroup ?>"><i class="icon icon--gray icon--plus"></i> <i class="icon icon--gray icon--<?= $linetype instanceof \jars\linetype\Transferin ? 'arrowleftright' : $linetype->icon ?>"></i></a>
+            <?php if ($linetype instanceof \ledger\linetype\Transferout): ?><?php continue; ?><?php endif ?>
+            <a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $defaultgroup ?>"><i class="icon icon--gray icon--plus"></i> <i class="icon icon--gray icon--<?= $linetype instanceof \ledger\linetype\Transferin ? 'arrowleftright' : $linetype->icon ?>"></i></a>
         <?php endforeach ?>
     </nav>
     <br><br>
 </div>
 
 <?php foreach ($linetypes as $linetype): ?>
-    <?php if ($linetype instanceof \jars\linetype\Transferout): ?><?php continue; ?><?php endif ?>
+    <?php if ($linetype instanceof \ledger\linetype\Transferout): ?><?php continue; ?><?php endif ?>
     <div data-type="<?php echo $linetype->name ?>" class="line floatline edit-form" style="display: none">
         <div class="lineclose">close</div>
         <h3><?= @['transferin' => 'Transfer', 'transaction' => 'Transaction'][$linetype->name] ?? ucfirst($linetype->name) ?></h3>

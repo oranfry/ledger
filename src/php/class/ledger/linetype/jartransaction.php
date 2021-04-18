@@ -1,7 +1,7 @@
 <?php
 namespace ledger\linetype;
 
-class transaction extends \Linetype
+class jartransaction extends \Linetype
 {
     public function __construct()
     {
@@ -14,6 +14,12 @@ class transaction extends \Linetype
                 'type' => 'date',
                 'groupable' => true,
                 'fuse' => '{t}.date',
+            ],
+            (object) [
+                'name' => 'jar',
+                'type' => 'text',
+                'groupable' => true,
+                'fuse' => '{t}.jar',
             ],
             (object) [
                 'name' => 'account',
@@ -32,11 +38,21 @@ class transaction extends \Linetype
                 'summary' => 'sum',
                 'fuse' => '{t}.amount',
             ],
+            (object) [
+                'name' => 'broken',
+                'type' => 'text',
+                'derived' => true,
+                'fuse' => "if ({t}.jar is null or {t}.jar = '', 'broken', '')",
+            ],
         ];
         $this->unfuse_fields = [
             '{t}.date' => (object) [
                 'expression' => ':{t}_date',
                 'type' => 'date',
+            ],
+            '{t}.jar' => (object) [
+                'expression' => ':{t}_jar',
+                'type' => 'varchar(40)',
             ],
             '{t}.account' => (object) [
                 'expression' => ':{t}_account',
@@ -59,6 +75,10 @@ class transaction extends \Linetype
 
         if (!@$line->date) {
             $errors[] = 'no date';
+        }
+
+        if (!@$line->jar) {
+            $errors[] = 'no jar';
         }
 
         if (!@$line->amount) {
