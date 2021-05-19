@@ -73,7 +73,7 @@
                                         <div class="inline-modal inline-modal--right"><nav><?php foreach ($linetypes as $linetype): ?><?php if ($linetype instanceof \ledger\linetype\Transferout): ?><?php continue; ?><?php endif ?><a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $record->date ?>"><i class="icon icon--gray icon--<?= $linetype instanceof \ledger\linetype\Transferin ? 'arrowleftright' : $linetype->icon ?>"></i></a><?php endforeach ?></nav></div>
                                         <a class="inline-modal-trigger"><i class="icon icon--gray icon--plus"></i></a>
                                     <?php elseif (count($linetypes) == 1): ?>
-                                        <a href="#" class="trigger-add-line" data-type="<?= $record->date ?>"><i class="icon icon--gray icon--plus"></i></a>
+                                        <a href="#" class="trigger-add-line" data-type="<?= $linetypes[0]->name ?>" data-date="<?= $record->date ?>"><i class="icon icon--gray icon--plus"></i></a>
                                     <?php endif ?>
                                 </div>
                             </td>
