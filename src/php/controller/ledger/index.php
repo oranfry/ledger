@@ -138,6 +138,10 @@ $linetypes = array_map(function($type) {
     return $linetype;
 }, $ledger->linetypes);
 
+$addable = array_filter($linetypes, function($l) use ($ledger) {
+    return !is_array(@$ledger->linetypes_addable) || in_array($l->name, $ledger->linetypes_addable);
+});
+
 $title = 'Ledger &bull; ' . $daterange->getTitle() . (@$jarFilter->value ? ' &bull; ' . $jarFilter->value : '') . (@$superjarFilter->value ? ' &bull; ' . $superjarFilter->value : '');
 
 foreach ($linetypes as $linetype) {
@@ -163,6 +167,7 @@ if (!$showas->value) {
 $mask_fields = array_values(array_intersect($mask_fields, map_objects($fields, 'name')));
 
 return [
+    'addable' => $addable,
     'currentgroup' => $currentgroup,
     'defaultgroup' => $defaultgroup,
     'fields' => $fields,
