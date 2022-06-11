@@ -157,7 +157,7 @@ foreach ($linetypes as $linetype) {
 }
 
 $showas = new Showas("ledger_showas");
-$showas->options = ['list', 'summaries', 'graph'];
+$showas->options = ['list', 'spending', 'summaries', 'graph'];
 ContextVariableSet::put('showas', $showas);
 
 if (!$showas->value) {
@@ -165,6 +165,19 @@ if (!$showas->value) {
 }
 
 $mask_fields = array_values(array_intersect($mask_fields, map_objects($fields, 'name')));
+
+$account_summary = [];
+
+foreach ($records as $record) {
+    $account = &$account_summary[@$record->account ?: 'unknown'];
+    $account = bcadd($account, @$record->amount ?: '0.00', 2);
+}
+
+ksort($account_summary);
+
+if (isset($account_summary['jartransfer']) && $account_summary['jartransfer'] === '0.00') {
+    unset($account_summary['jartransfer']);
+}
 
 return [
     'addable' => $addable,
@@ -182,4 +195,7 @@ return [
     'showas' => $showas,
     'summaries' => $summaries,
     'title' => $title,
+    'account_summary' => $account_summary,
 ];
+
+
