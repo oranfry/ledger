@@ -70,12 +70,8 @@ if (@filter_objects($ledger->fields, 'name', 'is', 'jar')[0]) {
     }
 }
 
-if (@$daterange->from) {
-    $past_summary = $ledger->summary(AUTH_TOKEN, $past_filters);
-} else {
-    $past_summary = (object) ['amount' => 0];
-}
-
+$sumfields = array_values(array_map(fn ($field) => $field->name, array_filter($ledger->fields, fn ($field) => $field->summary == 'sum')));
+$past_summary = @$daterange->from ? $ledger->summary(AUTH_TOKEN, $past_filters) : (object) array_fill_keys($sumfields, '0.00');
 $records = $ledger->search(AUTH_TOKEN, $filters);
 
 usort($records, function($a, $b){
@@ -92,7 +88,7 @@ $summaries = [
     'initial' => $past_summary,
 ];
 
-$balance = $past_summary->amount;
+$balances = clone $past_summary;
 $generic_builder = [];
 
 foreach ($fields as $field) {
@@ -106,13 +102,17 @@ foreach ($records as $record) {
         'transferout' => 'arrowleft',
     ][$record->type] ?? 'doc';
 
-    $balance = bcadd($balance, $record->amount, 2);
+    foreach ($sumfields as $sumfield) {
+        $balances->$sumfield = bcadd($balances->$sumfield, $record->$sumfield, 2);
+    }
 
     if (!isset($summaries[$record->date])) {
         $summaries[$record->date] = (object) [];
     }
 
-    $summaries[$record->date]->amount = $balance;
+    foreach ($sumfields as $sumfield) {
+        $summaries[$record->date]->$sumfield = $balances->$sumfield;
+    }
 
     foreach ($fields as $field) {
         if (count($generic_builder[$field->name]) < 2 && !in_array($record->{$field->name}, $generic_builder[$field->name])) {
