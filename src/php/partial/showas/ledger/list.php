@@ -13,12 +13,12 @@
             </tr>
         </thead>
         <tbody>
-            <?php for ($i = 0; $i <= count($records); $i++): ?>
+            <?php for ($i = 0; $i <= count($lines); $i++): ?>
                 <?php
                     $skip = false;
                     unset($record);
 
-                    if ($i == count($records)) {
+                    if ($i == count($lines)) {
                         if (!$seen_today) {
                             $record = (object) ['date' => $currentgroup];
                         } else {
@@ -27,11 +27,11 @@
 
                         $skip = true;
                     } else {
-                        $record = $records[$i];
+                        $record = $lines[$i];
                     }
                 ?>
 
-                <?php if (@$summaries[@$lastgroup] && ($i == count($records) || $record->date != $lastgroup)): ?>
+                <?php if (@$summaries[@$lastgroup] && ($i == count($lines) || $record->date != $lastgroup)): ?>
                     <?php $summary = $summaries[$lastgroup]; ?>
                     <tr>
                         <td class="select-column printhide"></td>
@@ -45,7 +45,7 @@
                     </tr>
                 <?php endif ?>
 
-                <?php if ($i == count($records) || $record->date != $lastgroup): ?>
+                <?php if ($i == count($lines) || $record->date != $lastgroup): ?>
                     <?php
                         if (!$seen_today && strcmp($currentgroup, @$record->date) < 0) {
                             unset($record);
@@ -62,7 +62,7 @@
                     <?php endif ?>
 
                     <?php if (@$record->date) : ?>
-                        <tr class="<?= strcmp($record->date, @$currentgroup) ? '' : 'today' ?>">
+                        <tr class="<?= strcmp($record->date, $currentgroup ?? '') ? '' : 'today' ?>">
                             <td class="select-column printhide"><i class="icon icon--gray icon--smalldot-o selectall"></i></td>
                             <?php $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . $daterange->constructQuery(['period' => 'day', 'rawrawfrom' => $record->date]) . '&back=' . base64_encode($_SERVER['REQUEST_URI']); ?>
                             <?php $grouptitle = "<a class=\"incog\" href=\"{$grouphref}\">" . $record->date . "</a>"; ?>
@@ -92,7 +92,7 @@
                         <td class="select-column printhide"><input type="checkbox"></td>
                         <?php foreach ($fields as $field): ?>
                             <?php $value = @$field->value ? computed_field_value($record, $field->value) : @$record->{$field->name}; ?>
-                            <td data-name="<?= $field->name ?>" data-value="<?= htmlspecialchars($value) ?>" style="<?php if ($field->type == 'number'): ?>text-align: right;<?php endif ?><?php if (in_array($field->name, $mask_fields)): ?>display: none;<?php endif ?>"><?php
+                            <td data-name="<?= $field->name ?>" data-value="<?= htmlspecialchars($value ?? '') ?>" style="<?php if ($field->type == 'number'): ?>text-align: right;<?php endif ?><?php if (in_array($field->name, $mask_fields)): ?>display: none;<?php endif ?>"><?php
                                 if ($field->type == 'icon') {
                                     ?><i class="icon icon--gray icon--<?= @$field->translate->{$value} ?? $value ?>"></i><?php
                                 } elseif ($field->type == 'color') {
@@ -100,7 +100,7 @@
                                 } elseif ($field->type == 'file' && @$record->{"{$field->name}_path"}) {
                                    ?><a href="/api/download/<?= $record->{"{$field->name}_path"} ?>" download><i class="icon icon--gray icon--<?= @$field->translate[$field->icon] ?? $field->icon ?>"></i></a><?php
                                 } else {
-                                    echo htmlspecialchars($value);
+                                    echo htmlspecialchars($value ?? '');
                                 }
                             ?></td>
                         <?php endforeach ?>
@@ -108,7 +108,7 @@
                 <?php endif ?>
 
                 <?php $lastgroup = @$record->date; ?>
-                <?php $seen_today |= (strcmp($lastgroup, date('Y-m-d')) == 0); ?>
+                <?php $seen_today = $seen_today || ($lastgroup ?? '') == $currentgroup; ?>
             <?php endfor ?>
         </tbody>
     </table>
@@ -123,61 +123,12 @@
 </div>
 
 <?php foreach ($linetypes as $linetype): ?>
-    <?php if ($linetype instanceof \ledger\linetype\Transferout): ?><?php continue; ?><?php endif ?>
     <div data-type="<?php echo $linetype->name ?>" class="line floatline edit-form" style="display: none">
         <div class="lineclose">close</div>
-        <h3><?= @['transferin' => 'Transfer', 'transaction' => 'Transaction'][$linetype->name] ?? ucfirst($linetype->name) ?></h3>
+        <h3><?= ucfirst($linetype->name) ?></h3>
         <form method="post">
-            <div class="form-row">
-                <div class="form-row__label">id</div>
-                <div class="form-row__value">
-                    <?php $field = (object) ['name' => 'id'] ?>
-                    <?php $value = @$line->id; ?>
-                    <?php unset($options); ?>
-                    <?php require search_plugins("src/php/partial/fieldtype/text.php"); ?>
-                </div>
-                <div style="clear: both"></div>
-            </div>
-            <?php if (defined('ROOT_USERNAME') && Blends::token_username(AUTH_TOKEN) == ROOT_USERNAME): ?>
-                <div class="form-row">
-                    <div class="form-row__label">user</div>
-                    <div class="form-row__value">
-                        <?php $field = (object) ['name' => 'user'] ?>
-                        <?php $value = @$line->user ?? @$_GET['user']; ?>
-                        <?php unset($options); ?>
-                        <?php require search_plugins("src/php/partial/fieldtype/text.php"); ?>
-                    </div>
-                    <div style="clear: both"></div>
-                </div>
-            <?php endif ?>
             <?php
-                foreach ($linetype->find_incoming_links(AUTH_TOKEN) as $incoming) {
-                    $parentaliasshort = $incoming->parent_link . '_' . $incoming->parent_linetype;
-
-                    $field = (object) ['name' => $parentaliasshort];
-                    $value = @$line->{$parentaliasshort} ?: @$_GET[$field->name] ?: @$field->default;
-
-
-                    $options = [];
-                    if (@$line->{$parentaliasshort}) {
-                        $options[] = $line->{$parentaliasshort};
-                    }
-                    ?>
-                    <div class="form-row">
-                        <div class="form-row__label" title="<?= $parentaliasshort ?>"><?= $incoming->parent_linetype ?></div>
-                        <div class="form-row__value">
-                            <?php require search_plugins("src/php/partial/fieldtype/text.php"); ?>
-                        </div>
-                        <div style="clear: both"></div>
-                    </div>
-                        <?php
-                }
-
                 foreach ($linetype->fields as $field) {
-                    if (@$field->derived && !@$field->show_derived) {
-                        continue;
-                    }
-
                     if ($field->type == 'file') {
                         $value = @$line->{"{$field->name}_path"};
                     } else {
@@ -192,7 +143,7 @@
                     <div class="form-row">
                         <div class="form-row__label"><?= @$field->label ?? $field->name ?></div>
                         <div class="form-row__value">
-                            <?php require search_plugins("src/php/partial/fieldtype/{$field->type}.php"); ?>
+                            <?php ss_require("src/php/partial/fieldtype/{$field->type}.php", compact('field', 'value', 'options')); ?>
                         </div>
                         <div style="clear: both"></div>
                     </div>
@@ -217,9 +168,7 @@
     <h3>Multiple Selections</h3>
     <form>
         <?php foreach ($fields as $field): ?>
-            <?php $field_inc = search_plugins("src/php/partial/fieldtype/{$field->type}.php"); ?>
-
-            <?php if (!file_exists($field_inc)) : ?>
+            <?php if (!($field_inc = search_plugins("src/php/partial/fieldtype/{$field->type}.php")) || !file_exists($field_inc)) : ?>
                 <?php continue; ?>
             <?php endif ?>
 

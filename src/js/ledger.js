@@ -41,7 +41,7 @@
         clearInputs.apply($line);
         $line.find('[name="date"]').closest('.form-row').show();
 
-        blends_api.lineGet(linetype, id, function(line) {
+        jars_client.lineGet(linetype, id, function(line) {
             $line.attr('data-id', id).show();
             $('.line').removeAttr('data-id').not($line).hide();
 
@@ -171,9 +171,12 @@
         var formData = new FormData($form[0]);
         var line = Object.fromEntries(formData);
 
+        line.type = $line.attr('data-type');
+
         var handleSave = function() {
-            blends_api.lineSave($line.attr('data-type'), [line], function(response){
-                location.reload();
+            jars_client.save([line], function(data, textStatus, request) {
+                $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'))
+                changeInstance();
             });
         };
 

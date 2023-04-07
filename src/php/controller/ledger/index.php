@@ -1,33 +1,46 @@
 <?php
+
 use contextvariableset\Daterange;
 use contextvariableset\Repeater;
 use contextvariableset\Showas;
 use contextvariableset\Value;
+use obex\Obex;
 
-$ledger = Blend::load(AUTH_TOKEN, 'ledger');
-$fields = filter_objects($ledger->fields, 'name', 'notin', ['type', 'superjar']);
-$mask_fields = ['date'];
+$title = 'Ledger';
+$icons = [
+    'correction' => 'tick-o',
+    'correctiongstsettlementgroup' => 'ird',
+    'error' => 'times-o',
+    'gstsettlementgroup' => 'ird',
+    'transaction' => 'dollar',
+];
 
-array_unshift($fields, (object) [
-    'name' => 'icon',
-    'type' => 'icon',
-    'derived' => true,
+if (preg_match('/^[a-f0-9]{64}$/', $_GET['version'])) {
+    $version = $_GET['version'];
+}
+
+foreach ($linetypes = $jars->linetypes('ledger') as $linetype) {
+    $linetype->icon ??= ($icons[$linetype->name] ?? 'doc');
+    // foreach ($linetype->find_incoming_links(AUTH_TOKEN) as $incoming) {
+    //     $parentaliasshort = $incoming->parent_link . '_' . $incoming->parent_linetype;
+
+    //     $field = (object) ['name' => $parentaliasshort];
+    //     $value = @$line->{$parentaliasshort} ?: @$_GET[$field->name] ?: @$field->default;
+
+    //     $options = [];
+    //     if (@$line->{$parentaliasshort}) {
+    //         $options[] = $line->{$parentaliasshort};
+    //     }
+    // }
+}
+
+$daterange = new Daterange('daterange', [
+    'periods' => ['gst'],
+    'allow_custom' => false,
 ]);
 
-ContextVariableSet::put('daterange', $daterange = new Daterange('daterange'));
+ContextVariableSet::put('daterange', $daterange);
 ContextVariableSet::put('repeater', $repeater = new Repeater('ledger_repeater'));
-
-$filters = [];
-$past_filters = [];
-
-if (@$daterange->from) {
-    $filters[] = (object) ['field' => 'date', 'cmp' => '>=', 'value' => $daterange->from];
-    $past_filters[] = (object) ['field' => 'date', 'cmp' => '<', 'value' => $daterange->from];
-}
-
-if (@$daterange->to) {
-    $filters[] = (object) ['field' => 'date', 'cmp' => '<=', 'value' => $daterange->to];
-}
 
 if ($repeater->period) {
       $filters[] = (object) [
@@ -37,124 +50,65 @@ if ($repeater->period) {
     ];
 }
 
-$accounts = get_flat_list('accounts') ?? [];
+$accounts = Obex::map(Obex::find($jars->group('lists', 'all', $version), 'name', 'is', 'accounts')->listitems, 'item');
 sort($accounts);
 
-$jars = null;
+$group = $daterange->to;
 
-if (@filter_objects($ledger->fields, 'name', 'is', 'jar')[0]) {
-    ContextVariableSet::put('jar', $jarFilter = new Value('jar'));
+$lines = $jars->group('ledger', $group, $version);
+$opening = '0.00';
 
-    $jars = get_flat_list('jars') ?? [];
-    sort($jars);
+foreach ($jars->group('ledgeropenings', 'all', $version) as $_group => $_opening) {
+    $opening = $_opening->opening;
 
-    $jarFilter->options = $jars;
-
-    if ($jarFilter->value) {
-        $filter = (object) ['field' => 'jar', 'cmp' => '=', 'value' => $jarFilter->value];
-        $filters[] = $filter;
-        $past_filters[] = $filter;
-        $mask_fields[] = 'jar';
-    }
-
-    if (@filter_objects($ledger->fields, 'name', 'is', 'superjar')[0]) {
-        ContextVariableSet::put('superjar', $superjarFilter = new Value('superjar'));
-
-        $superjarFilter->options = ['daily', 'longterm'];
-
-        if ($superjarFilter->value) {
-            $filter = (object) ['field' => 'superjar', 'cmp' => '=', 'value' => $superjarFilter->value];
-            $filters[] = $filter;
-            $past_filters[] = $filter;
-        }
+    if (strcmp($_group, $group) >= 0) {
+        break;
     }
 }
 
-$sumfields = array_values(array_map(fn ($field) => $field->name, array_filter($ledger->fields, fn ($field) => $field->summary == 'sum')));
-$past_summary = @$daterange->from ? $ledger->summary(AUTH_TOKEN, $past_filters) : (object) array_fill_keys($sumfields, '0.00');
-$records = $ledger->search(AUTH_TOKEN, $filters);
+$_opening = $opening;
+$clumped = [];
 
-usort($records, function($a, $b){
-    return strcmp($a->date, $b->date);
-});
-
-if (!count(filter_objects($fields, 'name', 'is', 'broken')) || !count(array_filter($records, function($r) {
-    return (bool) $r->broken;
-}))) {
-    $mask_fields[] = 'broken';
-}
-
-$summaries = [
-    'initial' => $past_summary,
+$fields = [
+    (object) ['type' => 'icon', 'name' => 'icon'],
+    (object) ['type' => 'string', 'name' => 'date'],
+    (object) ['type' => 'string', 'name' => 'account'],
+    (object) ['type' => 'string', 'name' => 'description'],
+    (object) ['type' => 'number', 'name' => 'amount'],
 ];
 
-$balances = clone $past_summary;
-$generic_builder = [];
+$generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, 'name')));
 
-foreach ($fields as $field) {
-    $generic_builder[$field->name] = [];
-}
-
-foreach ($records as $record) {
-    $record->icon = @[
-        'transaction' => 'dollar',
-        'transferin' => 'arrowright',
-        'transferout' => 'arrowleft',
-    ][$record->type] ?? 'doc';
-
-    foreach ($sumfields as $sumfield) {
-        $balances->$sumfield = bcadd($balances->$sumfield, $record->$sumfield, 2);
-    }
-
-    if (!isset($summaries[$record->date])) {
-        $summaries[$record->date] = (object) [];
-    }
-
-    foreach ($sumfields as $sumfield) {
-        $summaries[$record->date]->$sumfield = $balances->$sumfield;
-    }
+foreach ($lines as $line) {
+    $line->icon ??= $icons[$line->type] ?? 'doc';
 
     foreach ($fields as $field) {
-        if (count($generic_builder[$field->name]) < 2 && !in_array($record->{$field->name}, $generic_builder[$field->name])) {
-            $generic_builder[$field->name][] = $record->{$field->name};
+        $line->{$field->name} ??= null;
+
+        if (count($generic_builder[$field->name]) < 2 && !in_array($line->{$field->name}, $generic_builder[$field->name])) {
+            $generic_builder[$field->name][] = $line->{$field->name};
         }
     }
+
+    // if (!isset($clumped[$line->date])) {
+    //     $clumped[$line->date] = $clump = (object) [
+    //         'lines' => [],
+    //         'opening' => $_opening,
+    //         'closing' => $_opening,
+    //     ];
+    // }
+
+    // $clump->lines[] = $line;
+    // $clump->closing = bcadd($clump->closing, $line->amount, 2);
+    // $_opening = bcadd($_opening, $line->amount, 2);
 }
 
-$generic = (object) [];
+$generic = (object) array_map(fn ($values) => count($values) == 1 ? reset($values) : null, $generic_builder);
+// $highlight = strcmp($date, $earlier) <= 0 ? 'prev' : (strcmp($date, $later) >= 0 ? 'next' : 'today');
 
-foreach ($generic_builder as $field => $values) {
-    if (count($values) == 1) {
-        $generic->{$field} = $values[0];
-    }
-}
+$hasJars = false;
 
-$currentgroup = date('Y-m-d');
-$defaultgroup = (date('Y-m-d') >= $daterange->from && date('Y-m-d') <= $daterange->to) ? date('Y-m-d') : $daterange->from;
-
-$linetypes = array_map(function($type) {
-    $linetype = Linetype::load(AUTH_TOKEN, $type);
-
-    return $linetype;
-}, $ledger->linetypes);
-
-$addable = array_filter($linetypes, function($l) use ($ledger) {
-    return !is_array(@$ledger->linetypes_addable) || in_array($l->name, $ledger->linetypes_addable);
-});
-
-$title = 'Ledger &bull; ' . $daterange->getTitle() . (@$jarFilter->value ? ' &bull; ' . $jarFilter->value : '') . (@$superjarFilter->value ? ' &bull; ' . $superjarFilter->value : '');
-
-foreach ($linetypes as $linetype) {
-    foreach ($linetype->fields as $field) {
-        if (in_array($field->name, ['jar', 'from', 'to'])) {
-            $field->options = $jars;
-        }
-
-        if ($field->name == 'account') {
-            $field->options = $accounts;
-        }
-    }
-}
+// echo '<pre>'; dd($linetypes);
 
 $showas = new Showas("ledger_showas");
 $showas->options = ['list', 'spending', 'summaries', 'graph'];
@@ -164,38 +118,26 @@ if (!$showas->value) {
     $showas->value = 'list';
 }
 
-$mask_fields = array_values(array_intersect($mask_fields, map_objects($fields, 'name')));
+$mask_fields = ['date'];
+$currentgroup = date('Y-m-d');
+$defaultgroup = (date('Y-m-d') >= $daterange->from && date('Y-m-d') <= $daterange->to) ? date('Y-m-d') : $daterange->from;
+$addable = $linetypes;
+$periods = ['gst'];
 
-$account_summary = [];
-
-foreach ($records as $record) {
-    $account = &$account_summary[@$record->account ?: 'unknown'];
-    $account = bcadd($account, @$record->amount ?: '0.00', 2);
-}
-
-ksort($account_summary);
-
-if (isset($account_summary['jartransfer']) && $account_summary['jartransfer'] === '0.00') {
-    unset($account_summary['jartransfer']);
-}
-
-return [
-    'addable' => $addable,
-    'currentgroup' => $currentgroup,
-    'defaultgroup' => $defaultgroup,
-    'fields' => $fields,
-    'generic' => $generic,
-    'groupfield' => 'date',
-    'hasJars' => (bool) @$jarFilter,
-    'hasSuperjars' => (bool) @$superjarFilter,
-    'linetypes' => $linetypes,
-    'mask_fields' => $mask_fields,
-    'records' => $records,
-    'repeater' => $repeater,
-    'showas' => $showas,
-    'summaries' => $summaries,
-    'title' => $title,
-    'account_summary' => $account_summary,
-];
-
-
+return compact(
+    'addable',
+    'currentgroup',
+    'defaultgroup',
+    'fields',
+    'generic',
+    'group',
+    'hasJars',
+    'lines',
+    'linetypes',
+    'mask_fields',
+    'opening',
+    'periods',
+    'repeater',
+    'showas',
+    'title',
+);
