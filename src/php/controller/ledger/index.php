@@ -60,16 +60,13 @@ $group = $daterange->to;
 $lines = $jars->group('ledger', $group, $version);
 $opening = '0.00';
 
-foreach ($jars->group('ledgeropenings', 'all', $version) as $_group => $_opening) {
-    $opening = $_opening->opening;
+// foreach ($jars->group('ledgeropenings', 'all', $version) as $_group => $_opening) {
+//     $opening = $_opening->opening;
 
-    if (strcmp($_group, $group) >= 0) {
-        break;
-    }
-}
-
-$_opening = $opening;
-$clumped = [];
+//     if (strcmp($_group, $group) >= 0) {
+//         break;
+//     }
+// }
 
 $fields = [
     (object) ['type' => 'icon', 'name' => 'icon'],
@@ -79,7 +76,9 @@ $fields = [
     (object) ['type' => 'number', 'name' => 'amount'],
 ];
 
+$_opening = $opening;
 $generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, 'name')));
+// $clumped = [];
 
 foreach ($lines as $line) {
     $line->icon ??= $icons[$line->type] ?? 'doc';
