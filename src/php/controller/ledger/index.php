@@ -6,6 +6,12 @@ use contextvariableset\Showas;
 use contextvariableset\Value;
 use obex\Obex;
 
+$version = null;
+
+if (is_string(@$_GET['version']) && preg_match('/^[a-f0-9]{64}$/', $_GET['version'])) {
+    $version = $_GET['version'];
+}
+
 $title = 'Ledger';
 $icons = [
     'correction' => 'tick-o',
@@ -14,10 +20,6 @@ $icons = [
     'gstsettlementgroup' => 'ird',
     'transaction' => 'dollar',
 ];
-
-if (preg_match('/^[a-f0-9]{64}$/', $_GET['version'])) {
-    $version = $_GET['version'];
-}
 
 foreach ($linetypes = $jars->linetypes('ledger') as $linetype) {
     $linetype->icon ??= ($icons[$linetype->name] ?? 'doc');
