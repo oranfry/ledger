@@ -1,6 +1,7 @@
 <?php use contextvariableset\Daterange; ?>
-<?php $daterange = ContextVariableSet::get('daterange'); ?>
-<?php $daterange->display(); ?>
+<?php if ($daterange = ContextVariableSet::get('daterange')): ?>
+    <?php $daterange->display(); ?>
+<?php endif ?>
 <?php if ($hasJars) : ?>
     <?php ContextVariableSet::get('jar')->display(); ?>
     <?php if ($hasSuperjars) : ?><?php ContextVariableSet::get('superjar')->display(); ?><?php endif ?>

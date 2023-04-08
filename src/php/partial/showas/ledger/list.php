@@ -1,7 +1,7 @@
 <?php $lastgroup = 'initial'; ?>
 <?php $daterange = ContextVariableSet::get('daterange'); ?>
 <?php $num_visible_cols = count($fields) - count($mask_fields); ?>
-<?php $seen_today = !@$currentgroup || strcmp($currentgroup, $daterange->from) < 0 || strcmp($currentgroup, $daterange->to) > 0; ?>
+<?php $seen_today = !@$daterange || !@$currentgroup || strcmp($currentgroup, $daterange->from) < 0 || strcmp($currentgroup, $daterange->to) > 0; ?>
 <div style="float: left">
     <table class="easy-table">
         <thead>
@@ -64,7 +64,7 @@
                     <?php if (@$line->date) : ?>
                         <tr class="<?= strcmp($line->date, $currentgroup ?? '') ? '' : 'today' ?>">
                             <td class="select-column printhide"><i class="icon icon--gray icon--smalldot-o selectall"></i></td>
-                            <?php $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . $daterange->constructQuery(['period' => 'day', 'rawrawfrom' => $line->date]) . '&back=' . base64_encode($_SERVER['REQUEST_URI']); ?>
+                            <?php $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($daterange ? $daterange->constructQuery(['period' => 'day', 'rawrawfrom' => $line->date]) . '&' : '') . 'back=' . base64_encode($_SERVER['REQUEST_URI']); ?>
                             <?php $grouptitle = "<a class=\"incog\" href=\"{$grouphref}\">" . $line->date . "</a>"; ?>
                             <td colspan="<?= $num_visible_cols ?>" style="line-height: 2em; font-weight: bold">
                                 <?= $grouptitle ?>

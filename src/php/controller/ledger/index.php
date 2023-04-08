@@ -5,6 +5,7 @@ use contextvariableset\Repeater;
 use contextvariableset\Showas;
 use contextvariableset\Value;
 use obex\Obex;
+use subsimple\Config;
 
 $version = null;
 
@@ -36,35 +37,33 @@ foreach ($linetypes = $jars->linetypes('ledger') as $linetype) {
     // }
 }
 
-$daterange = new Daterange('daterange', [
-    'periods' => ['gst'],
-    'allow_custom' => false,
-]);
+$group = 'all';
 
-ContextVariableSet::put('daterange', $daterange);
-ContextVariableSet::put('repeater', $repeater = new Repeater('ledger_repeater'));
+if ($periods = @Config::get()->ledger->periods) {
+    $daterange = new Daterange('daterange', [
+        'periods' => ['gst'],
+        'allow_custom' => false,
+    ]);
 
-if ($repeater->period) {
-      $filters[] = (object) [
-        'cmp' => '*=',
-        'field' => 'date',
-        'value' => $repeater->render(),
-    ];
+    ContextVariableSet::put('daterange', $daterange);
+    ContextVariableSet::put('repeater', $repeater = new Repeater('ledger_repeater'));
+
+    $group = $daterange->to;
 }
 
-$accounts = Obex::map(Obex::find($jars->group('lists', 'all', $version), 'name', 'is', 'accounts')->listitems, 'item');
-sort($accounts);
-
-$group = $daterange->to;
+// $accounts = Obex::map(Obex::find($jars->group('lists', 'all', $version), 'name', 'is', 'accounts')->listitems, 'item');
+// sort($accounts);
 
 $lines = $jars->group('ledger', $group, $version);
 $opening = '0.00';
 
-foreach ($jars->group('ledgeropenings', 'all', $version) as $_group => $_opening) {
-    $opening = $_opening->opening;
+if ($periods) {
+    foreach ($jars->group('ledgeropenings', 'all', $version) ?? [] as $_group => $row) {
+        $opening = $row->opening;
 
-    if (strcmp($_group, $group) >= 0) {
-        break;
+        if (strcmp($_group, $group) >= 0) {
+            break;
+        }
     }
 }
 
@@ -119,9 +118,13 @@ if (!$showas->value) {
 
 $mask_fields = ['date'];
 $currentgroup = date('Y-m-d');
-$defaultgroup = (date('Y-m-d') >= $daterange->from && date('Y-m-d') <= $daterange->to) ? date('Y-m-d') : $daterange->from;
+$defaultgroup = date('Y-m-d');
+
+if ($periods && (date('Y-m-d') < $daterange->from || date('Y-m-d') > $daterange->to)) {
+    $defaultgroup = $daterange->from;
+}
+
 $addable = $linetypes;
-$periods = ['gst'];
 
 ksort($account_summary);
 
@@ -142,8 +145,6 @@ return compact(
     'linetypes',
     'mask_fields',
     'opening',
-    'periods',
-    'repeater',
     'showas',
     'summaries',
     'title',
