@@ -22,6 +22,7 @@
         $('.linerow').removeClass('selected').find('.select-column [type="checkbox"]').prop('checked', false);
         $('.line [name]').val(null);
         $('.line').hide();
+        $('.delete-selected').addClass('disabled');
     };
 
     var selectOneLine = function() {
@@ -40,6 +41,8 @@
 
         clearInputs.apply($line);
         $line.find('[name="date"]').closest('.form-row').show();
+
+        $('.delete-selected').show();
 
         jars_client.lineGet(linetype, id, function(line) {
             $line.attr('data-id', id).show();
@@ -129,6 +132,8 @@
             $('.line').not($generic).removeAttr('data-id').hide();
             $generic.show();
         }
+
+        $('.delete-selected').toggleClass('disabled', !$selected.length);
     };
 
     $('.linerow').on('click', selectOneLine);
@@ -158,6 +163,7 @@
 
         $('.line').removeAttr('data-id').not($line).hide();
         $line.show();
+        $('.delete-selected').addClass('disabled');
         closeModals();
     });
 
@@ -349,16 +355,27 @@
         });
     });
 
-    $('.delete-selected').on('click', function() {
+    $('.delete-selected').on('click', function(e) {
+        e.preventDefault();
+
         var $selected = getSelected();
 
         if (!$selected.length) {
             return;
         }
 
-        if (confirm('Delete ' + $selected.length + ' lines?')) {
-            blends_api.blendDelete('ledger', getSelectionQuery($selected), function(){
-                window.location.reload();
+        if (confirm('Delete ' + $selected.length + ' line' + ($selected.length != 1 && 's' || '') + '?')) {
+            var lines = $selected.map(function () {
+                return {
+                    "type": $(this).data('type'),
+                    "id": $(this).data('id'),
+                    "_is": false
+                };
+            }).get();
+
+            jars_client.save(lines, function(data, textStatus, request) {
+                $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'))
+                changeInstance();
             });
         }
     });

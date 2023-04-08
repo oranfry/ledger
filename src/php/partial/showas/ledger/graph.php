@@ -1,4 +1,7 @@
 <?php
+
+use subsimple\Period;
+
 $daterange = ContextVariableSet::get('daterange');
 
 if (!$daterange) {

@@ -51,7 +51,7 @@
                 }
             });
         },
-        blendDelete: function(blend, query, success){
+        delete: function(blend, query, success){
             $.ajax('/api/blend/' + blend + '?' + query, {
                 method: 'delete',
                 contentType: false,

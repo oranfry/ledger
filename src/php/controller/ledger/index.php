@@ -60,25 +60,26 @@ $group = $daterange->to;
 $lines = $jars->group('ledger', $group, $version);
 $opening = '0.00';
 
-// foreach ($jars->group('ledgeropenings', 'all', $version) as $_group => $_opening) {
-//     $opening = $_opening->opening;
+foreach ($jars->group('ledgeropenings', 'all', $version) as $_group => $_opening) {
+    $opening = $_opening->opening;
 
-//     if (strcmp($_group, $group) >= 0) {
-//         break;
-//     }
-// }
+    if (strcmp($_group, $group) >= 0) {
+        break;
+    }
+}
 
 $fields = [
     (object) ['type' => 'icon', 'name' => 'icon'],
     (object) ['type' => 'string', 'name' => 'date'],
     (object) ['type' => 'string', 'name' => 'account'],
     (object) ['type' => 'string', 'name' => 'description'],
-    (object) ['type' => 'number', 'name' => 'amount'],
+    (object) ['type' => 'number', 'name' => 'amount', 'summary' => 'sum'],
 ];
 
 $_opening = $opening;
 $generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, 'name')));
-// $clumped = [];
+$summaries = ['initial' => (object) ['amount' => $opening]];
+$account_summary = [];
 
 foreach ($lines as $line) {
     $line->icon ??= $icons[$line->type] ?? 'doc';
@@ -91,25 +92,22 @@ foreach ($lines as $line) {
         }
     }
 
-    // if (!isset($clumped[$line->date])) {
-    //     $clumped[$line->date] = $clump = (object) [
-    //         'lines' => [],
-    //         'opening' => $_opening,
-    //         'closing' => $_opening,
-    //     ];
-    // }
+    if (!isset($clumped[$line->date])) {
+        $summaries[$line->date] = $summary = (object) [
+            'amount' => $_opening,
+        ];
+    }
 
-    // $clump->lines[] = $line;
-    // $clump->closing = bcadd($clump->closing, $line->amount, 2);
-    // $_opening = bcadd($_opening, $line->amount, 2);
+    $summary->amount = bcadd($summary->amount, $line->amount, 2);
+    $_opening = bcadd($_opening, $line->amount, 2);
+
+    $account = @$line->account ?: 'unknown';
+    $account_summary[$account] = bcadd($account_summary[$account] ?? '0', @$line->amount ?: '0.00', 2);
 }
 
 $generic = (object) array_map(fn ($values) => count($values) == 1 ? reset($values) : null, $generic_builder);
-// $highlight = strcmp($date, $earlier) <= 0 ? 'prev' : (strcmp($date, $later) >= 0 ? 'next' : 'today');
 
 $hasJars = false;
-
-// echo '<pre>'; dd($linetypes);
 
 $showas = new Showas("ledger_showas");
 $showas->options = ['list', 'spending', 'summaries', 'graph'];
@@ -125,7 +123,14 @@ $defaultgroup = (date('Y-m-d') >= $daterange->from && date('Y-m-d') <= $daterang
 $addable = $linetypes;
 $periods = ['gst'];
 
+ksort($account_summary);
+
+if (isset($account_summary['jartransfer']) && !(float)$account_summary['jartransfer']) {
+    unset($account_summary['jartransfer']);
+}
+
 return compact(
+    'account_summary',
     'addable',
     'currentgroup',
     'defaultgroup',
@@ -140,5 +145,6 @@ return compact(
     'periods',
     'repeater',
     'showas',
+    'summaries',
     'title',
 );
