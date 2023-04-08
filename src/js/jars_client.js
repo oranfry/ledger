@@ -1,24 +1,5 @@
 (function(){
     window.jars_client = {
-        login: function(username, password) {
-            $.ajax('/api/auth/login', {
-                method: 'post',
-                contentType: false,
-                processData: false,
-                data: JSON.stringify({username: username, password: password}),
-                success: function(data) {
-                    if (typeof data.token != 'undefined') {
-                        setCookie('token', data.token);
-                        window.location.reload();
-                    } else {
-                        alert(data.error || 'Unknown error');
-                    }
-                },
-                error: function(data){
-                    alert(data.responseJSON && data.responseJSON.error || 'Unknown error');
-                }
-            });
-        },
         updateBlend: function(blend, query, data, success) {
             $.ajax('/api/blend/' + blend + '/update?' + query, {
                 method: 'post',
@@ -148,23 +129,6 @@
             }
 
             alert('Could not find ' + linetype + '/' + id);
-        },
-        logout: function() {
-            $.ajax('/api/auth/logout', {
-                method: 'post',
-                contentType: false,
-                processData: false,
-                beforeSend: function(request) {
-                    request.setRequestHeader("X-Auth", getCookie('token'));
-                },
-                success: function(data) {
-                    deleteCookie('token');
-                    window.location.href = '/';
-                },
-                error: function(data){
-                    alert(data.responseJSON && data.responseJSON.error || 'Unknown error');
-                }
-            });
         }
     };
 })();
