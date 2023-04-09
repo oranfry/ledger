@@ -105,7 +105,7 @@
             });
         },
         save: function(lines, success) {
-            $.ajax('/ledger/ajax/save', {
+            $.ajax(window.location.pathname + '/ajax/save', {
                 method: 'post',
                 contentType: false,
                 processData: false,
