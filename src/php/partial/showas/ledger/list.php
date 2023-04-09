@@ -1,7 +1,7 @@
 <?php $lastgroup = 'initial'; ?>
 <?php $daterange = ContextVariableSet::get('daterange'); ?>
 <?php $num_visible_cols = count($fields) - count($mask_fields); ?>
-<?php $seen_today = !@$daterange || !@$currentgroup || strcmp($currentgroup, $daterange->from) < 0 || strcmp($currentgroup, $daterange->to) > 0; ?>
+<?php $seen_today = !@$currentgroup || strcmp($currentgroup, $daterange->from ?? '0000-00-00') < 0 || strcmp($currentgroup, $daterange->to ?? '9999-12-31') > 0; ?>
 <div style="float: left">
     <table class="easy-table">
         <thead>
