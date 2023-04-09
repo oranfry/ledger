@@ -80,6 +80,8 @@
                         $inputs.hide();
                         $downloadlink.attr('href', '/api/download/' + line[property + '_path']);
                     }
+                } else if ($property.attr("type") == 'checkbox') {
+                    $property.prop('checked', line[property]);
                 } else {
                     $property.val(line[property]);
                 }
