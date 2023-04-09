@@ -174,9 +174,7 @@
                 <div class="form-row__label"><?= $field->name ?></div>
                 <div class="form-row__value">
                     <?php if ($field->type != 'file'): ?>
-                        <div style="position: absolute; left: 0;">
-                            <input type="checkbox" data-for="<?= $field->name ?>">
-                        </div>
+                        <input class="includeme" type="checkbox" data-for="<?= $field->name ?>">
                     <?php endif ?>
                     <?php $options = @$field->options; ?>
                     <?php $bulk = true; require $field_inc; unset($bulk); ?>
