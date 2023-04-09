@@ -19,7 +19,6 @@ $config = match(true) {
     default => (object) [],
 };
 
-$title = $config->title ?? 'Ledger';
 $group = 'all';
 $daterange = null;
 
@@ -185,6 +184,8 @@ ksort($account_summary);
 if (isset($account_summary['jartransfer']) && !(float)$account_summary['jartransfer']) {
     unset($account_summary['jartransfer']);
 }
+
+$title = ($daterange ? $daterange->getTitle() . ' ' : null) . ($config->title ?? 'Ledger');
 
 return compact(
     'account_summary',
