@@ -42,7 +42,7 @@
         clearInputs.apply($line);
         $line.find('[name="date"]').closest('.form-row').show();
 
-        $('.delete-selected').show();
+        $('.delete-selected').removeClass('disabled');
 
         jars_client.lineGet(linetype, id, function(line) {
             $line.attr('data-id', id).show();
