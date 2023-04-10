@@ -15,7 +15,13 @@
             $downloadlink.removeAttr('href');
         });
 
-        $(this).find('[name]').val(null);
+        $(this).find('[name]').each(function () {
+            if ($(this).is('[type="checkbox"]')) {
+                $(this).prop('checked', false);
+            } else {
+                $(this).val(null);
+            }
+        });
     };
 
     var deselectAllLines = function() {
@@ -178,6 +184,10 @@
         var $form = $(this).closest('form');
         var formData = new FormData($form[0]);
         var line = Object.fromEntries(formData);
+
+        $form.find('[name][type="checkbox"]').each(function () {
+            line[$(this).attr('name')] = $(this).prop('checked');
+        });
 
         line.type = $line.attr('data-type');
 
