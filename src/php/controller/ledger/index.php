@@ -1,9 +1,6 @@
 <?php
 
-use contextvariableset\Daterange;
-use contextvariableset\Repeater;
 use contextvariableset\Showas;
-use contextvariableset\Value;
 use obex\Obex;
 use subsimple\Config;
 
@@ -13,27 +10,22 @@ if (is_string(@$_GET['version']) && preg_match('/^[a-f0-9]{64}$/', $_GET['versio
     $version = $_GET['version'];
 }
 
-$config = match(true) {
-    defined('LEDGER_CONFIG') => Config::get()->ledger[LEDGER_CONFIG] ?? (object) [],
-    is_object($_config = @Config::get()->ledger) => $_config,
-    default => (object) [],
-};
-
-$group = 'all';
-$daterange = null;
-
-$reports = @$config->report ? (array) $config->report : ['ledger'];
-
-if (count($reports) > 1) {
-    ContextVariableSet::put('report', $reportFilter = new Value('report'));
-
-    $reportFilter->options = $reports;
+if (!is_string($config_class = defined('LEDGER_CONFIG') ? @Config::get()->ledger[LEDGER_CONFIG] : @Config::get()->ledger)) {
+    error_response("No class specified for ledger config '$config_name'");
 }
 
-$report = $reportFilter->value ?? reset($reports);
+$config = new $config_class;
+
+foreach ($variables = $config->variables() as $variable) {
+    ContextVariableSet::put($variable->prefix, $variable);
+}
+
+[$report, $group] = explode('/', $config->group(), 2);
+
+$icons = $config->icons();
 
 foreach ($linetypes = $jars->linetypes($report) as $linetype) {
-    $linetype->icon ??= ($config->icons[$linetype->name] ?? 'doc');
+    $linetype->icon ??= ($icons[$linetype->name] ?? 'doc');
     // foreach ($linetype->find_incoming_links(AUTH_TOKEN) as $incoming) {
     //     $parentaliasshort = $incoming->parent_link . '_' . $incoming->parent_linetype;
 
@@ -47,20 +39,11 @@ foreach ($linetypes = $jars->linetypes($report) as $linetype) {
     // }
 }
 
-
-if ($periods = @$config->periods) {
-    $daterange = new Daterange('daterange', [
-        'periods' => $periods,
-        'allow_custom' => false,
-    ]);
-
-    ContextVariableSet::put('daterange', $daterange);
-    ContextVariableSet::put('repeater', $repeater = new Repeater('ledger_repeater'));
-
-    if (is_callable(@$config->group)) {
-        $group = ($config->group)($report, $daterange);
-    }
-}
+// if ($periods = @$config->periods) {
+//     if (is_callable(@$config->group)) {
+//         $group = ($config->group)($report, $daterange);
+//     }
+// }
 
 // $accounts = Obex::map(Obex::find($jars->group('lists', 'all', $version), 'name', 'is', 'accounts')->listitems, 'item');
 // sort($accounts);
@@ -68,8 +51,10 @@ if ($periods = @$config->periods) {
 $lines = $jars->group($report, $group, $version);
 $opening = '0.00';
 
-if (($config->cumulative ?? true) && $daterange && $daterange->period !== 'alltime') {
-    foreach ($jars->group('ledgeropenings', 'all', $version) ?? [] as $_group => $row) {
+if ($config->cumulative()) {
+    [$opening_report, $opening_group] = explode('/', $config->opening_group(), 2);
+
+    foreach ($jars->group($opening_report, $opening_group, $version) ?? [] as $_group => $row) {
         $opening = $row->opening;
 
         if (strcmp($_group, $group) >= 0) {
@@ -78,32 +63,7 @@ if (($config->cumulative ?? true) && $daterange && $daterange->period !== 'allti
     }
 }
 
-$fields = [
-    (object) ['name' => 'icon', 'type' => 'icon'],
-    (object) ['name' => 'date', 'type' => 'string'],
-    (object) ['name' => 'account', 'type' => 'string'],
-    (object) ['name' => 'description', 'type' => 'string'],
-    (object) ['name' => 'amount', 'type' => 'number', 'summary' => 'sum'],
-];
-
-if (@$config->fields) {
-    $_fields = [];
-
-    foreach ($config->fields as $field) {
-        if (is_string($field)) {
-            $field = Obex::find($fields, 'name', 'is', $field);
-        }
-
-        if (!is_object($field)) {
-            error_response('Field that could not be resolved to an object');
-        }
-
-        $_fields[] = $field;
-    }
-
-    $fields = $_fields;
-}
-
+$fields = $config->fields();
 $generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, 'name')));
 $summaries = ['initial' => (object) []];
 $_opening = (object) [];
@@ -121,7 +81,7 @@ foreach ($fields as $field) {
 $account_summary = [];
 
 foreach ($lines as $line) {
-    $line->icon ??= $config->icons[$line->type] ?? 'doc';
+    $line->icon ??= $icons[$line->type] ?? 'doc';
 
     foreach ($fields as $field) {
         $line->{$field->name} ??= null;
@@ -153,11 +113,8 @@ foreach ($lines as $line) {
 }
 
 $generic = (object) array_map(fn ($values) => count($values) == 1 ? reset($values) : null, $generic_builder);
-
-$hasJars = false;
-
-$showas = new Showas("ledger_showas");
-$showas->options = $config->showas ?? ['list', 'spending', 'summaries', 'graph'];
+$showas = new Showas('ledger_showas');
+$showas->options = $config->showas();
 
 if (!$graphfields) {
     $showas->options = array_diff($showas->options, ['graph']);
@@ -171,21 +128,16 @@ if (!$showas->value) {
 
 $mask_fields = array_intersect(['date'], Obex::map($fields, 'name', 'is', 'date'));
 $currentgroup = date('Y-m-d');
-$defaultgroup = date('Y-m-d');
-
-if ($daterange && (date('Y-m-d') < $daterange->from || date('Y-m-d') > $daterange->to)) {
-    $defaultgroup = $daterange->from;
-}
-
+$defaultgroup = $config->defaultgroup();
 $addable = $linetypes;
 
 ksort($account_summary);
 
-if (isset($account_summary['jartransfer']) && !(float)$account_summary['jartransfer']) {
-    unset($account_summary['jartransfer']);
-}
+// if (isset($account_summary['jartransfer']) && !(float)$account_summary['jartransfer']) {
+//     unset($account_summary['jartransfer']);
+// }
 
-$title = ($daterange ? $daterange->getTitle() . ' ' : null) . ($config->title ?? 'Ledger');
+$title = $config->title();
 
 return compact(
     'account_summary',
@@ -196,7 +148,6 @@ return compact(
     'generic',
     'graphfields',
     'group',
-    'hasJars',
     'lines',
     'linetypes',
     'mask_fields',
@@ -204,4 +155,5 @@ return compact(
     'showas',
     'summaries',
     'title',
+    'variables',
 );

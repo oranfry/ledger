@@ -1,15 +1,6 @@
-<?php use contextvariableset\Daterange; ?>
-<?php if ($daterange = ContextVariableSet::get('daterange')): ?>
-    <?php $daterange->display(); ?>
-<?php endif ?>
-<?php if ($hasJars) : ?>
-    <?php ContextVariableSet::get('jar')->display(); ?>
-    <?php if ($hasSuperjars) : ?><?php ContextVariableSet::get('superjar')->display(); ?><?php endif ?>
-<?php endif ?>
-
-<?php if ($report = ContextVariableSet::get('report')): ?>
-    <?php $report->display(); ?>
-<?php endif ?>
+<?php foreach ($variables as $var): ?>
+    <?php $var->display(); ?>
+<?php endforeach ?>
 
 <div class="navset">
     <a class="delete-selected disabled" href="#"><i class="icon icon--gray icon--bin"></i></a>
