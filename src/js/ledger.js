@@ -35,7 +35,7 @@
         var $linerow = $(this);
         var linetype = $linerow.attr('data-type');
         var id = $linerow.attr('data-id');
-        var $line = $('.line[data-type="' + (linetype == 'transferout' && 'transferin' || linetype) + '"]');
+        var $line = $('.line[data-type="' + linetype + '"]');
 
         $('.linerow').not($linerow).removeClass('selected').find('.select-column [type="checkbox"]').prop('checked', false);
 
@@ -53,13 +53,6 @@
         jars_client.lineGet(linetype, id, function(line) {
             $line.attr('data-id', id).show();
             $('.line').removeAttr('data-id').not($line).hide();
-
-            if (linetype == 'transferout') {
-                line.amount = (-line.amount).toFixed(2);
-                line.from = line.jar;
-                line.jar = line.to;
-                delete line.to;
-            }
 
             for (const _property in line) {
                 var property = _property.replace(/_path$/, '');
@@ -397,7 +390,7 @@
         deselectAllLines();
 
         var linetype = $(this).attr('data-type');
-        var $line = $('.line[data-type="' + (linetype == 'transferout' && 'transferin' || linetype) + '"]');
+        var $line = $('.line[data-type="' + linetype + '"]');
 
         clearInputs.apply($line);
 
