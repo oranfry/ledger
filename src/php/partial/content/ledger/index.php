@@ -1,5 +1,4 @@
 <br>
-<h2><?= $title ?></h2>
+<h3><?= $title ?></h3>
 <br>
 <?php require search_plugins("src/php/partial/showas/ledger/{$showas->value}.php"); ?>
-
