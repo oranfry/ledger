@@ -104,6 +104,10 @@
                                 ?><span style="display: inline-block; height: 1em; width: 1em; background-color: #<?= $value ?>;">&nbsp;</span><?php
                             } elseif ($field->type == 'file' && @$line->{"{$field->name}_path"}) {
                                ?><a href="/api/download/<?= $line->{"{$field->name}_path"} ?>" download><i class="icon icon--gray icon--<?= @$field->translate[$field->icon] ?? $field->icon ?>"></i></a><?php
+                            } elseif ($field->type == 'number' && @$field->dp !== null) {
+                                echo htmlspecialchars(bcadd('0', $value ?? '0', $field->dp));
+                            } elseif ($field->type == 'number') {
+                                echo htmlspecialchars($value ?? '0');
                             } else {
                                 echo htmlspecialchars($value ?? '');
                             }
