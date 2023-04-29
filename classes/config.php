@@ -27,7 +27,7 @@ class config
             (object) ['name' => 'date', 'type' => 'string'],
             (object) ['name' => 'account', 'type' => 'string'],
             (object) ['name' => 'description', 'type' => 'string'],
-            (object) ['name' => 'amount', 'type' => 'number', 'summary' => 'sum'],
+            (object) ['name' => 'amount', 'type' => 'number', 'summary' => 'sum', 'dp' => 2],
         ];
     }
 
