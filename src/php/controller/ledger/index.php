@@ -14,7 +14,7 @@ if (!is_string($config_class = defined('LEDGER_CONFIG') ? @Config::get()->ledger
     error_response("No class specified for ledger config '$config_name'");
 }
 
-$config = new $config_class;
+$config = new $config_class($jars);
 
 foreach ($variables = $config->variables() as $variable) {
     ContextVariableSet::put($variable->prefix, $variable);

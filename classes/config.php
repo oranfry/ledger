@@ -2,8 +2,14 @@
 
 namespace ledger;
 
+use jars\contract\Client as JarsClient;
+
 class config
 {
+    public function __construct(JarsClient $jars)
+    {
+    }
+
     public function cumulative(): bool
     {
         return false;
