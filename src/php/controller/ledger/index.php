@@ -67,6 +67,7 @@ $fields = $config->fields();
 $generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, 'name')));
 $summaries = ['initial' => (object) []];
 $_opening = (object) [];
+$has_date = (bool) Obex::find($fields, 'name', 'is', 'date');
 
 $graphfields = [];
 
@@ -91,7 +92,7 @@ foreach ($lines as $line) {
         }
     }
 
-    if (!isset($summaries[$line->date])) {
+    if ($has_date && !isset($summaries[$line->date])) {
         $summaries[$line->date] = $summary = (object) [];
 
         foreach ($fields as $field) {
@@ -126,8 +127,14 @@ if (!$showas->value) {
     $showas->value = 'list';
 }
 
-$mask_fields = array_intersect(['date'], Obex::map($fields, 'name', 'is', 'date'));
-$currentgroup = date('Y-m-d');
+$mask_fields = [];
+$currentgroup = null;
+
+if ($has_date) {
+    $mask_fields = ['date'];
+    $currentgroup = date('Y-m-d');
+}
+
 $defaultgroup = $config->defaultgroup();
 $addable = $linetypes;
 
@@ -148,6 +155,7 @@ return compact(
     'generic',
     'graphfields',
     'group',
+    'has_date',
     'lines',
     'linetypes',
     'mask_fields',

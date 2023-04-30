@@ -1,7 +1,7 @@
 <?php $lastgroup = 'initial'; ?>
 <?php $daterange = ContextVariableSet::get('daterange'); ?>
 <?php $num_visible_cols = count($fields) - count($mask_fields); ?>
-<?php $seen_today = !@$currentgroup || strcmp($currentgroup, $daterange->from ?? '0000-00-00') < 0 || strcmp($currentgroup, $daterange->to ?? '9999-12-31') > 0; ?>
+<?php $seen_today = !$has_date || !@$currentgroup || strcmp($currentgroup, $daterange->from ?? '0000-00-00') < 0 || strcmp($currentgroup, $daterange->to ?? '9999-12-31') > 0; ?>
 <table class="easy-table">
     <thead>
         <tr>
@@ -30,7 +30,7 @@
                 }
             ?>
 
-            <?php if (@$summaries[@$lastgroup] && ($i == count($lines) || $line->date != $lastgroup)): ?>
+            <?php if ($has_date && @$summaries[@$lastgroup] && ($i == count($lines) || @$line->date != $lastgroup)): ?>
                 <?php $summary = $summaries[$lastgroup]; ?>
                 <tr>
                     <td class="select-column printhide"></td>
@@ -44,7 +44,7 @@
                 </tr>
             <?php endif ?>
 
-            <?php if ($i == count($lines) || $line->date != $lastgroup): ?>
+            <?php if ($i == count($lines) || @$line->date != $lastgroup): ?>
                 <?php
                     if (!$seen_today && strcmp($currentgroup, @$line->date) < 0) {
                         unset($line);
@@ -89,7 +89,7 @@
             <?php if (!@$skip): ?>
                 <tr
                     <?= @$parent ? "data-parent=\"{$parent}\"" : '' ?>
-                    data-group="<?= $line->date ?>"
+                    data-group="<?= @$line->date ?>"
                     class="linerow <?= @$line->broken ? 'broken' : null ?>"
                     data-id="<?= $line->id ?>"
                     data-type="<?= $line->type ?>"
