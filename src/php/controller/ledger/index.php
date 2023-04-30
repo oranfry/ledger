@@ -52,14 +52,23 @@ $lines = $jars->group($report, $group, $version);
 $opening = '0.00';
 
 if ($config->cumulative()) {
+    $defo = false;
+
     [$opening_report, $opening_group] = explode('/', $config->opening_group(), 2);
 
     foreach ($jars->group($opening_report, $opening_group, $version) ?? [] as $_group => $row) {
         $opening = $row->opening;
+        $delta = $row->delta;
 
         if (strcmp($_group, $group) >= 0) {
+            $defo = true;
             break;
         }
+    }
+
+    if (!$defo) {
+        $dp = max(strlen(preg_replace('/[^.]*\.?/', '', $opening, 1)), strlen(preg_replace('/[^.]*\.?/', '', $delta, 1)));
+        $opening = bcadd($opening, $delta, $dp);
     }
 }
 
