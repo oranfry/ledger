@@ -53,6 +53,7 @@ $opening = '0.00';
 
 if ($config->cumulative()) {
     $defo = false;
+    $delta = '0.00';
 
     [$opening_report, $opening_group] = explode('/', $config->opening_group(), 2);
 
