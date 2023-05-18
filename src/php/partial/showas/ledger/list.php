@@ -5,7 +5,7 @@
 <table class="easy-table">
     <thead>
         <tr>
-            <th class="select-column printhide"><i class="icon icon--gray icon--smalldot-o selectall"></i></td></th>
+            <th style="display: none" class="select-column printhide"><i class="icon icon--gray icon--smalldot-o selectall"></i></td></th>
             <?php foreach ($fields as $field): ?>
                 <th class="<?= $field->type == 'number' ? 'right' : '' ?>" <?php if (in_array($field->name, $mask_fields)): ?>style="display: none"<?php endif ?>><?= !@$field->supress_header && @$field->type != 'icon' ? $field->name : '' ?></th>
             <?php endforeach ?>
@@ -33,7 +33,6 @@
             <?php if ($has_date && @$summaries[@$lastgroup] && ($i == count($lines) || @$line->date != $lastgroup)): ?>
                 <?php $summary = $summaries[$lastgroup]; ?>
                 <tr>
-                    <td class="select-column printhide"></td>
                     <?php foreach ($fields as $field): ?>
                         <td class="<?= $field->type == 'number' ? 'right' : '' ?>" <?php if (in_array($field->name, $mask_fields)): ?>style="display: none"<?php endif ?>>
                             <?php if (@$summary->{$field->name}): ?>
@@ -62,7 +61,6 @@
 
                 <?php if (@$line->date) : ?>
                     <tr class="<?= strcmp($line->date, $currentgroup ?? '') ? '' : 'today' ?>">
-                        <td class="select-column printhide"><i class="icon icon--gray icon--smalldot-o selectall"></i></td>
                         <?php $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($daterange ? $daterange->constructQuery(['period' => 'day', 'rawrawfrom' => $line->date]) . '&' : '') . 'back=' . base64_encode($_SERVER['REQUEST_URI']); ?>
                         <?php $grouptitle = "<a class=\"incog\" href=\"{$grouphref}\">" . $line->date . "</a>"; ?>
                         <td colspan="<?= $num_visible_cols ?>" style="line-height: 2em; font-weight: bold">
@@ -94,10 +92,13 @@
                     data-id="<?= $line->id ?>"
                     data-type="<?= $line->type ?>"
                 >
-                    <td class="select-column printhide"><input type="checkbox"></td>
-                    <?php foreach ($fields as $field): ?>
+                    <?php foreach ($fields as $fi => $field): ?>
                         <?php $value = @$field->value ? computed_field_value($line, $field->value) : @$line->{$field->name}; ?>
                         <td data-name="<?= $field->name ?>" data-value="<?= htmlspecialchars($value ?? '') ?>" style="<?php if ($field->type == 'number'): ?>text-align: right;<?php endif ?><?php if (in_array($field->name, $mask_fields)): ?>display: none;<?php endif ?>"><?php
+                            if (!$fi) {
+                                ?><div class="select-column"><input style="display: none" type="checkbox"></div><?php
+                            }
+
                             if ($field->type == 'icon') {
                                 ?><i class="icon icon--gray icon--<?= @$field->translate->{$value} ?? $value ?>"></i><?php
                             } elseif ($field->type == 'color') {
