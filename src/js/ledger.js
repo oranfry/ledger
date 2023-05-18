@@ -31,11 +31,49 @@
         $('.delete-selected').addClass('disabled');
     };
 
+    var getLine = function (linetype, id) {
+        for (var i = 0; i < window.lines.length; i++) {
+            var line = window.lines[i];
+
+            if (line.type == linetype && line.id == id) {
+                return ledger_map_line(line);
+            }
+        }
+
+        return null;
+    };
+
+    var saveLine = function(lines, success) {
+        $.ajax(window.location.pathname + '/ajax/save', {
+            method: 'post',
+            contentType: false,
+            processData: false,
+            beforeSend: function(request) {
+                request.setRequestHeader("X-Auth", getCookie('token'));
+            },
+            data: JSON.stringify(lines),
+            success: success,
+            error: function(data){
+                alert(data.responseJSON.error);
+            }
+        });
+    };
+
     var selectOneLine = function() {
         var $linerow = $(this);
-        var linetype = $linerow.attr('data-type');
-        var id = $linerow.attr('data-id');
-        var $line = $('.line[data-type="' + linetype + '"]');
+        var line = getLine($linerow.attr('data-type'), $linerow.attr('data-id'));
+
+        if (!line) {
+            alert('Could not find ' + $linerow.attr('data-type') + '/' + $linerow.attr('data-id'));
+            return;
+        }
+
+        var $line = $('.line[data-type="' + line.type + '"]');
+
+        if (!$line) {
+            alert('Could not find the linetype form for  ' + line.type);
+            return;
+        }
 
         $('.linerow').not($linerow).removeClass('selected').find('.select-column [type="checkbox"]').prop('checked', false);
 
@@ -50,42 +88,40 @@
 
         $('.delete-selected').removeClass('disabled');
 
-        jars_client.lineGet(linetype, id, function(line) {
-            $line.attr('data-id', id).show();
-            $('.line').removeAttr('data-id').not($line).hide();
+        $line.attr('data-id', line.id).show();
+        $('.line').removeAttr('data-id').not($line).hide();
 
-            for (const _property in line) {
-                var property = _property.replace(/_path$/, '');
-                var $property = $line.find('[name="' + property + '"]');
+        for (const _property in line) {
+            var property = _property.replace(/_path$/, '');
+            var $property = $line.find('[name="' + property + '"]');
 
-                if ($property.is('select')) {
-                    $property.find('[data-adhoc]').remove();
+            if ($property.is('select')) {
+                $property.find('[data-adhoc]').remove();
 
-                    if (line[property] && !$property.find('option[value="' + line[property] + '"]').length) {
-                        $property.prepend('<option data-adhoc="1" value="' + line[property] + '" selected="selected">' + line[property] + '</option>');
-                    }
-                }
-
-                if ($property.is('[type="file"]')) {
-                    var $controls = $property.closest('.file-field-controls');
-                    var $actions = $controls.find('.file-field-controls__actions');
-                    var $inputs = $controls.find('.file-field-controls__input');
-                    var $downloadlink = $controls.find('a');
-                    var $cancel = $controls.find('.file-field-controls__cancel');
-
-                    if (line[property + '_path']) {
-                        $cancel.show();
-                        $actions.show();
-                        $inputs.hide();
-                        $downloadlink.attr('href', '/api/download/' + line[property + '_path']);
-                    }
-                } else if ($property.attr("type") == 'checkbox') {
-                    $property.prop('checked', line[property]);
-                } else {
-                    $property.val(line[property]);
+                if (line[property] && !$property.find('option[value="' + line[property] + '"]').length) {
+                    $property.prepend('<option data-adhoc="1" value="' + line[property] + '" selected="selected">' + line[property] + '</option>');
                 }
             }
-        });
+
+            if ($property.is('[type="file"]')) {
+                var $controls = $property.closest('.file-field-controls');
+                var $actions = $controls.find('.file-field-controls__actions');
+                var $inputs = $controls.find('.file-field-controls__input');
+                var $downloadlink = $controls.find('a');
+                var $cancel = $controls.find('.file-field-controls__cancel');
+
+                if (line[property + '_path']) {
+                    $cancel.show();
+                    $actions.show();
+                    $inputs.hide();
+                    $downloadlink.attr('href', '/api/download/' + line[property + '_path']);
+                }
+            } else if ($property.attr("type") == 'checkbox') {
+                $property.prop('checked', line[property]);
+            } else {
+                $property.val(line[property]);
+            }
+        }
     };
 
     var refreshDisplayedLineEditor = function() {
@@ -184,8 +220,10 @@
 
         line.type = $line.attr('data-type');
 
+        line = ledger_unmap_line(line);
+
         var handleSave = function() {
-            jars_client.save([line], function(data, textStatus, request) {
+            saveLine([line], function(data, textStatus, request) {
                 $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'))
                 changeInstance();
             });
@@ -424,4 +462,7 @@
     $('.lineclose').on('click', function() {
         deselectAllLines();
     });
+
+    window.ledger_map_line = function (line) { return line; }
+    window.ledger_unmap_line = function (line) { return line; }
 })();

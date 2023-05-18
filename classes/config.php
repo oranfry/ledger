@@ -3,10 +3,11 @@
 namespace ledger;
 
 use jars\contract\Client as JarsClient;
+use subsimple\Config as SubsimpleConfig;
 
 class config
 {
-    public function __construct(JarsClient $jars)
+    public function __construct(array $viewdata, ?string $version = null)
     {
     }
 
@@ -31,19 +32,28 @@ class config
         ];
     }
 
-    public function group(): string
-    {
-        return 'ledger/all';
-    }
-
-    public function icons(): array
+    public function lines(): array
     {
         return [];
     }
 
-    public function opening_group(): string
+    public function linetypes(): array
     {
-        return 'ledgeropenings/all';
+        return [];
+    }
+
+    public static function load(array $viewdata, ?string $version = null)
+    {
+        if (!is_string($config_class = defined('LEDGER_CONFIG') ? @SubsimpleConfig::get()->ledger[LEDGER_CONFIG] : @SubsimpleConfig::get()->ledger)) {
+            throw new Exception("No class specified for ledger config '$config_name'");
+        }
+
+        return new $config_class($viewdata, $version);
+    }
+
+    public function opening(): string
+    {
+        return '0.00';
     }
 
     public function showas(): array

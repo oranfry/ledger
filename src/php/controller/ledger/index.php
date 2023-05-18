@@ -1,79 +1,38 @@
 <?php
 
 use contextvariableset\Showas;
+use ledger\config as LedgerConfig;
 use obex\Obex;
-use subsimple\Config;
 
-$version = null;
+$config = LedgerConfig::load($viewdata, @$_GET['version']);
 
-if (is_string(@$_GET['version']) && preg_match('/^[a-f0-9]{64}$/', $_GET['version'])) {
-    $version = $_GET['version'];
-}
+$defaultgroup = $config->defaultgroup();
+$fields = $config->fields();
+$lines = $config->lines();
+$linetypes = $config->linetypes();
+$opening = $config->opening();
+$showas_options = $config->showas();
+$title = $config->title();
+$variables = $config->variables();
 
-if (!is_string($config_class = defined('LEDGER_CONFIG') ? @Config::get()->ledger[LEDGER_CONFIG] : @Config::get()->ledger)) {
-    error_response("No class specified for ledger config '$config_name'");
-}
-
-$config = new $config_class($jars);
-
-foreach ($variables = $config->variables() as $variable) {
+foreach ($variables as $variable) {
     ContextVariableSet::put($variable->prefix, $variable);
 }
 
-[$report, $group] = explode('/', $config->group(), 2);
+// foreach ($linetypes as $linetype) {
+//     foreach ($linetype->find_incoming_links(AUTH_TOKEN) as $incoming) {
+//         $parentaliasshort = $incoming->parent_link . '_' . $incoming->parent_linetype;
 
-$icons = $config->icons();
+//         $field = (object) ['name' => $parentaliasshort];
+//         $value = @$line->{$parentaliasshort} ?: @$_GET[$field->name] ?: @$field->default;
 
-foreach ($linetypes = $jars->linetypes($report) as $linetype) {
-    $linetype->icon ??= ($icons[$linetype->name] ?? 'doc');
-    // foreach ($linetype->find_incoming_links(AUTH_TOKEN) as $incoming) {
-    //     $parentaliasshort = $incoming->parent_link . '_' . $incoming->parent_linetype;
-
-    //     $field = (object) ['name' => $parentaliasshort];
-    //     $value = @$line->{$parentaliasshort} ?: @$_GET[$field->name] ?: @$field->default;
-
-    //     $options = [];
-    //     if (@$line->{$parentaliasshort}) {
-    //         $options[] = $line->{$parentaliasshort};
-    //     }
-    // }
-}
-
-// if ($periods = @$config->periods) {
-//     if (is_callable(@$config->group)) {
-//         $group = ($config->group)($report, $daterange);
+//         $options = [];
+//         if (@$line->{$parentaliasshort}) {
+//             $options[] = $line->{$parentaliasshort};
+//         }
 //     }
 // }
 
-// $accounts = Obex::map(Obex::find($jars->group('lists', 'all', $version), 'name', 'is', 'accounts')->listitems, 'item');
-// sort($accounts);
-
-$lines = $jars->group($report, $group, $version);
-$opening = '0.00';
-
-if ($config->cumulative()) {
-    $defo = false;
-    $delta = '0.00';
-
-    [$opening_report, $opening_group] = explode('/', $config->opening_group(), 2);
-
-    foreach ($jars->group($opening_report, $opening_group, $version) ?? [] as $_group => $row) {
-        $opening = $row->opening;
-        $delta = $row->delta;
-
-        if (strcmp($_group, $group) >= 0) {
-            $defo = true;
-            break;
-        }
-    }
-
-    if (!$defo) {
-        $dp = max(strlen(preg_replace('/[^.]*\.?/', '', $opening, 1)), strlen(preg_replace('/[^.]*\.?/', '', $delta, 1)));
-        $opening = bcadd($opening, $delta, $dp);
-    }
-}
-
-$fields = $config->fields();
 $generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, 'name')));
 $summaries = ['initial' => (object) []];
 $_opening = (object) [];
@@ -92,8 +51,6 @@ foreach ($fields as $field) {
 $account_summary = [];
 
 foreach ($lines as $line) {
-    $line->icon ??= $icons[$line->type] ?? 'doc';
-
     foreach ($fields as $field) {
         $line->{$field->name} ??= null;
 
@@ -125,7 +82,7 @@ foreach ($lines as $line) {
 
 $generic = (object) array_map(fn ($values) => count($values) == 1 ? reset($values) : null, $generic_builder);
 $showas = new Showas('ledger_showas');
-$showas->options = $config->showas();
+$showas->options = $showas_options;
 
 if (!$graphfields) {
     $showas->options = array_diff($showas->options, ['graph']);
@@ -145,7 +102,6 @@ if ($has_date) {
     $currentgroup = date('Y-m-d');
 }
 
-$defaultgroup = $config->defaultgroup();
 $addable = $linetypes;
 
 ksort($account_summary);
@@ -153,8 +109,6 @@ ksort($account_summary);
 // if (isset($account_summary['jartransfer']) && !(float)$account_summary['jartransfer']) {
 //     unset($account_summary['jartransfer']);
 // }
-
-$title = $config->title();
 
 return compact(
     'account_summary',
@@ -164,7 +118,6 @@ return compact(
     'fields',
     'generic',
     'graphfields',
-    'group',
     'has_date',
     'lines',
     'linetypes',
