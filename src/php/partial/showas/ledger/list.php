@@ -147,10 +147,11 @@
 
                     if ($value && $options && !in_array($value, $options)) {
                         array_unshift($options, $value);
-                    } ?>
+                    }
+                    ?>
                     <div class="form-row">
                         <div class="form-row__label"><?= @$field->label ?? $field->name ?></div>
-                        <div class="form-row__value">
+                        <div class="form-row__value <?= @$field->readonly ? 'noedit' : null ?>">
                             <?php ss_require("src/php/partial/fieldtype/{$field->type}.php", compact('field', 'value', 'options')); ?>
                         </div>
                         <div style="clear: both"></div>
@@ -170,35 +171,3 @@
         </form>
     </div>
 <?php endforeach ?>
-
-<div data-type="generic" class="line floatline bulk-edit-form" style="display: none">
-    <div class="lineclose">close</div>
-    <h3>Multiple Selections</h3>
-    <form>
-        <?php foreach ($fields as $field): ?>
-            <?php if (!($field_inc = search_plugins("src/php/partial/fieldtype/{$field->type}.php")) || !file_exists($field_inc)) : ?>
-                <?php continue; ?>
-            <?php endif ?>
-
-            <div class="form-row">
-                <div class="form-row__label"><?= $field->name ?></div>
-                <div class="form-row__value">
-                    <?php if ($field->type != 'file'): ?>
-                        <input class="includeme" type="checkbox" data-for="<?= $field->name ?>">
-                    <?php endif ?>
-                    <?php $options = @$field->options; ?>
-                    <?php $bulk = true; require $field_inc; unset($bulk); ?>
-                </div>
-                <div style="clear: both"></div>
-            </div>
-        <?php endforeach ?>
-
-        <div class="form-row">
-            <div class="form-row__label">&nbsp;</div>
-            <div class="form-row__value">
-                <button type="button" class="bulksave button button--main">Save</button>
-            </div>
-            <div style="clear: both"></div>
-        </div>
-    </form>
-</div>
