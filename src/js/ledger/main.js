@@ -43,7 +43,7 @@
         return null;
     };
 
-    var saveLine = function(lines, success) {
+    var saveLines = function(lines, success) {
         $.ajax(window.location.pathname + '/ajax/save', {
             method: 'post',
             contentType: false,
@@ -223,7 +223,7 @@
         line = ledger_unmap_line(line);
 
         var handleSave = function() {
-            saveLine([line], function(data, textStatus, request) {
+            saveLines([line], function(data, textStatus, request) {
                 $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'))
                 changeInstance();
             });
@@ -416,7 +416,7 @@
                 };
             }).get();
 
-            jars_client.save(lines, function(data, textStatus, request) {
+            saveLines(lines, function(data, textStatus, request) {
                 $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'))
                 changeInstance();
             });
