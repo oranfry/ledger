@@ -1,6 +1,6 @@
 <?php
 
-namespace ledger;
+namespace Ledger;
 
 class Router extends \subsimple\Router
 {

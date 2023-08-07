@@ -1,10 +1,8 @@
 {
-    "name": "oranfry/ledger",
-    "version": "1.0.0",
-    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "ledger\\": "classes"
+            "Ledger\\": ""
         }
-    }
+    },
+    "name": "oranfry/ledger"
 }

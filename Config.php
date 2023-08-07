@@ -1,11 +1,11 @@
 <?php
 
-namespace ledger;
+namespace Ledger;
 
 use jars\contract\Client as JarsClient;
 use subsimple\Config as SubsimpleConfig;
 
-class config
+class Config
 {
     public function __construct(array $viewdata, ?string $version = null)
     {

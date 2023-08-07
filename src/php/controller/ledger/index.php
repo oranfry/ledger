@@ -1,10 +1,10 @@
 <?php
 
 use contextvariableset\Showas;
-use ledger\config as LedgerConfig;
+use Ledger\Config;
 use obex\Obex;
 
-$config = LedgerConfig::load($viewdata, @$_GET['version']);
+$config = Config::load($viewdata, @$_GET['version']);
 
 $dayperiod = $config->dayperiod();
 $defaultgroup = $config->defaultgroup();
