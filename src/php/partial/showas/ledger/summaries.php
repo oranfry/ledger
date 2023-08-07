@@ -1,3 +1,4 @@
+<?php use ContextVariableSets\ContextVariableSet; ?>
 <?php $daterange = ContextVariableSet::get('daterange'); ?>
 <?php $seen_today = !@$daterange || !@$currentgroup || strcmp($currentgroup, $daterange->chunk->start()) < 0 || strcmp($currentgroup, $daterange->chunk->end()) > 0; ?>
 <?php $groups = array_keys($summaries); ?>

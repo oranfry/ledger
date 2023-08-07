@@ -4,5 +4,8 @@
             "Ledger\\": ""
         }
     },
-    "name": "oranfry/ledger"
+    "name": "oranfry/ledger",
+    "require": {
+        "oranfry/tools": "*"
+    }
 }

@@ -1,3 +1,4 @@
+<?php use ContextVariableSets\ContextVariableSet; ?>
 <?php $lastgroup = 'initial'; ?>
 <?php $daterange = ContextVariableSet::get('daterange'); ?>
 <?php $num_visible_cols = count($fields); ?>

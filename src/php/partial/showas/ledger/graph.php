@@ -1,5 +1,7 @@
 <?php
 
+use ContextVariableSets\ContextVariableSet;
+
 if (!$daterange = ContextVariableSet::get('daterange')) {
     return;
 }

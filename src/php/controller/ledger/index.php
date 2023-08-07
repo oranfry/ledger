@@ -1,6 +1,7 @@
 <?php
 
-use contextvariableset\Showas;
+use ContextVariableSets\ContextVariableSet;
+use ContextVariableSets\Showas;
 use Ledger\Config;
 use obex\Obex;
 
