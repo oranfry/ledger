@@ -6,6 +6,7 @@ use obex\Obex;
 
 $config = LedgerConfig::load($viewdata, @$_GET['version']);
 
+$dayperiod = $config->dayperiod();
 $defaultgroup = $config->defaultgroup();
 $fields = $config->fields();
 $lines = $config->lines();
@@ -114,6 +115,7 @@ return compact(
     'account_summary',
     'addable',
     'currentgroup',
+    'dayperiod',
     'defaultgroup',
     'fields',
     'generic',

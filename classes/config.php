@@ -16,6 +16,11 @@ class config
         return false;
     }
 
+    public function dayperiod(): ?string
+    {
+        return null;
+    }
+
     public function defaultgroup(): ?string
     {
         return null;

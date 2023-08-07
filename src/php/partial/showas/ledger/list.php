@@ -1,7 +1,7 @@
 <?php $lastgroup = 'initial'; ?>
 <?php $daterange = ContextVariableSet::get('daterange'); ?>
 <?php $num_visible_cols = count($fields); ?>
-<?php $seen_today = !$has_date || !@$currentgroup || strcmp($currentgroup, $daterange->from ?? '0000-00-00') < 0 || strcmp($currentgroup, $daterange->to ?? '9999-12-31') > 0; ?>
+<?php $seen_today = !$has_date || !@$currentgroup || strcmp($currentgroup, $daterange->chunk->start() ?? '0000-00-00') < 0 || strcmp($currentgroup, $daterange->chunk->end() ?? '9999-12-31') > 0; ?>
 <table class="easy-table">
     <thead>
         <tr>
@@ -49,8 +49,11 @@
                 <?php endif; ?>
                 <?php if (@$line->date) : ?>
                     <tr class="<?= strcmp($line->date, $currentgroup ?? '') ? '' : 'today' ?>">
-                        <?php $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($daterange ? $daterange->constructQuery(['period' => 'day', 'rawrawfrom' => $line->date]) . '&' : '') . 'back=' . base64_encode($_SERVER['REQUEST_URI']); ?>
-                        <?php $grouptitle = "<a class=\"incog\" href=\"{$grouphref}\">" . $line->date . "</a>"; ?>
+                        <?php $grouptitle = $line->date; ?>
+                        <?php if ($dayperiod): ?>
+                            <?php $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($daterange ? $daterange->constructQuery(['period' => $dayperiod, 'date' => $line->date]) . '&' : '') . 'back=' . base64_encode($_SERVER['REQUEST_URI']); ?>
+                            <?php $grouptitle = "<a class=\"incog\" href=\"$grouphref\">$grouptitle</a>"; ?>
+                        <?php endif ?>
                         <td colspan="<?= $num_visible_cols ?>" style="line-height: 2em; font-weight: bold">
                             <?= $grouptitle ?>
                             <div style="float: right" class="inline-rel">

@@ -1,5 +1,5 @@
 <?php $daterange = ContextVariableSet::get('daterange'); ?>
-<?php $seen_today = !@$daterange || !@$currentgroup || strcmp($currentgroup, $daterange->from) < 0 || strcmp($currentgroup, $daterange->to) > 0; ?>
+<?php $seen_today = !@$daterange || !@$currentgroup || strcmp($currentgroup, $daterange->chunk->start()) < 0 || strcmp($currentgroup, $daterange->chunk->end()) > 0; ?>
 <?php $groups = array_keys($summaries); ?>
 <?php if (!empty($summaries)): ?>
     <table class="easy-table">

@@ -1,18 +1,14 @@
 <?php
 
-use subsimple\Period;
-
 if (!$daterange = ContextVariableSet::get('daterange')) {
     return;
 }
 
-$from = $daterange->from;
-$to = $daterange->to;
+$from = $daterange->chunk->start();
+$to = $daterange->chunk->end();
 $graphfields ??= ['amount'];
-
-$graphfrom = @$from ?? @array_keys($summaries)[1];
-$graphto = @$to ?? @array_keys($summaries)[count($summaries) - 1];
-$current_period = Period::load($daterange->period);
+$graphfrom = $from ?? @array_keys($summaries)[1];
+$graphto = $to ?? @array_keys($summaries)[count($summaries) - 1];
 
 if (!@$summaries) {
     echo 'cant show a graph';
@@ -40,8 +36,8 @@ if (!$range = $max - $min) {
 
 for ($date = $graphfrom, $graphtotal_days = 0; strcmp($graphto, $date) >= 0; $date = date_shift($date, '+1 day'), $graphtotal_days++);
 
-$graphdiv = $daterange->rawto ? '1 month' : @$current_period->graphdiv;
-$graphdivff = $daterange->rawto ? false : @$current_period->graphdivff;
+$graphdiv = '1 month';
+$graphdivff = false;
 
 $series = [];
 $colors = ['333333'];
@@ -62,12 +58,7 @@ foreach ($graphfields as $i => $graphfield) {
 
     if ($graphdiv) {
         $divs = [];
-
-        if ($graphdivff) {
-            $nextdiv = ff($date);
-        } else {
-            $nextdiv = date_shift($date, '+' . $graphdiv);
-        }
+        $nextdiv = date_shift($date, '+' . $graphdiv);
     }
 
     while (strcmp($graphto, $date) >= 0) {
