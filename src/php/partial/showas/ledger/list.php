@@ -1,8 +1,6 @@
-<?php use ContextVariableSets\ContextVariableSet; ?>
 <?php $lastgroup = 'initial'; ?>
-<?php $daterange = ContextVariableSet::get('daterange'); ?>
 <?php $num_visible_cols = count($fields); ?>
-<?php $seen_today = !$has_date || !@$currentgroup || strcmp($currentgroup, $daterange->chunk->start() ?? '0000-00-00') < 0 || strcmp($currentgroup, $daterange->chunk->end() ?? '9999-12-31') > 0; ?>
+<?php $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->start ?? '0000-00-00') < 0 || strcmp($currentgroup, $dateinfo->end ?? '9999-12-31') > 0; ?>
 <table class="easy-table">
     <thead>
         <tr>
@@ -25,7 +23,7 @@
             <?php else : ?>
                 <?php $line = $lines[$i]; ?>
             <?php endif; ?>
-            <?php if ($has_date && @$summaries[@$lastgroup] && ($i == count($lines) || @$line->date != $lastgroup)): ?>
+            <?php if ($dateinfo && @$summaries[@$lastgroup] && ($i == count($lines) || @$line->{$dateinfo->field} != $lastgroup)): ?>
                 <?php $summary = $summaries[$lastgroup]; ?>
                 <tr>
                     <?php foreach ($fields as $field): ?>
@@ -37,10 +35,10 @@
                     <?php endforeach; ?>
                 </tr>
             <?php endif; ?>
-            <?php if ($i == count($lines) || @$line->date != $lastgroup): ?>
-                <?php if (!$seen_today && strcmp($currentgroup, @$line->date) < 0) : ?>
+            <?php if ($i == count($lines) || $dateinfo && $line->{$dateinfo->field} != $lastgroup): ?>
+                <?php if (!$seen_today && strcmp($currentgroup, @$line->{$dateinfo->field}) < 0) : ?>
                     <?php unset($line); ?>
-                    <?php $line = (object) ['date' => $currentgroup]; ?>
+                    <?php $line = (object) [$dateinfo->field => $currentgroup]; ?>
                     <?php $i--; ?>
                     <?php $skip = true; ?>
                 <?php endif; ?>
@@ -48,11 +46,11 @@
                     </tbody>
                     <tbody>
                 <?php endif; ?>
-                <?php if (@$line->date) : ?>
-                    <tr class="<?= strcmp($line->date, $currentgroup ?? '') ? '' : 'today' ?>">
-                        <?php $grouptitle = $line->date; ?>
-                        <?php if ($dayperiod): ?>
-                            <?php $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($daterange ? $daterange->constructQuery(['period' => $dayperiod, 'date' => $line->date]) . '&' : '') . 'back=' . base64_encode($_SERVER['REQUEST_URI']); ?>
+                <?php if (@$line->{$dateinfo->field}) : ?>
+                    <tr class="<?= strcmp($line->{$dateinfo->field}, $currentgroup ?? '') ? '' : 'today' ?>">
+                        <?php $grouptitle = $line->{$dateinfo->field}; ?>
+                        <?php if (@$dateinfo->daylink): ?>
+                            <?php $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . $dateinfo->daylink($line->{$dateinfo->field}) . '&back=' . base64_encode($_SERVER['REQUEST_URI']); ?>
                             <?php $grouptitle = "<a class=\"incog\" href=\"$grouphref\">$grouptitle</a>"; ?>
                         <?php endif ?>
                         <td colspan="<?= $num_visible_cols ?>" style="line-height: 2em; font-weight: bold">
@@ -62,13 +60,13 @@
                                     <div class="inline-modal inline-modal--right">
                                         <nav>
                                             <?php foreach ($addable as $linetype): ?>
-                                                <a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $line->date ?>"><i class="icon icon--gray icon--<?= $linetype->icon ?? 'doc' ?>"></i></a>
+                                                <a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $line->{$dateinfo->field} ?>"><i class="icon icon--gray icon--<?= $linetype->icon ?? 'doc' ?>"></i></a>
                                             <?php endforeach; ?>
                                         </nav>
                                     </div>
                                     <a class="inline-modal-trigger"><i class="icon icon--gray icon--plus"></i></a>
                                 <?php elseif (count($addable) == 1): ?>
-                                    <a href="#" class="trigger-add-line" data-type="<?= $addable[0]->name ?>" data-date="<?= $line->date ?>"><i class="icon icon--gray icon--plus"></i></a>
+                                    <a href="#" class="trigger-add-line" data-type="<?= $addable[0]->name ?>" data-date="<?= $line->{$dateinfo->field} ?>"><i class="icon icon--gray icon--plus"></i></a>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -78,7 +76,7 @@
             <?php if (!@$skip): ?>
                 <tr
                     <?= @$parent ? "data-parent=\"{$parent}\"" : '' ?>
-                    data-group="<?= @$line->date ?>"
+                    data-group="<?= @$line->{$dateinfo->field} ?>"
                     class="linerow <?= @$line->broken ? 'broken' : null ?>"
                     data-id="<?= $line->id ?>"
                     data-type="<?= $line->type ?>"
@@ -102,7 +100,7 @@
                     <?php endforeach; ?>
                 </tr>
             <?php endif; ?>
-            <?php $lastgroup = @$line->date; ?>
+            <?php $lastgroup = @$line->{$dateinfo->field}; ?>
             <?php $seen_today = $seen_today || ($lastgroup ?? '') == $currentgroup; ?>
         <?php endfor; ?>
     </tbody>

@@ -8,7 +8,7 @@ use obex\Obex;
 $config_name = defined('LEDGER_CONFIG') ? LEDGER_CONFIG : null;
 $config = Config::load($viewdata, $config_name, @$_GET['version']);
 
-$dayperiod = $config->dayperiod();
+$dateinfo = $config->dateinfo();
 $defaultgroup = $config->defaultgroup();
 $fields = $config->fields();
 $lines = $config->lines();
@@ -39,7 +39,6 @@ foreach ($variables as $variable) {
 $generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, 'name')));
 $summaries = ['initial' => (object) []];
 $_opening = (object) [];
-$has_date = (bool) Obex::find($fields, 'name', 'is', 'date');
 
 $graphfields = [];
 
@@ -62,23 +61,25 @@ foreach ($lines as $line) {
         }
     }
 
-    if ($has_date && !isset($summaries[$line->date])) {
-        $summaries[$line->date] = $summary = (object) [];
+    if ($dateinfo) {
+        if (!isset($summaries[$line->{$dateinfo->field}])) {
+            $summaries[$line->{$dateinfo->field}] = $summary = (object) [];
+
+            foreach ($fields as $field) {
+                if (@$field->summary == 'sum') {
+                    $summary->{$field->name} = $_opening->{$field->name};
+                }
+            }
+        }
 
         foreach ($fields as $field) {
             if (@$field->summary == 'sum') {
-                $summary->{$field->name} = $_opening->{$field->name};
+                $summary->{$field->name} = bcadd($summary->{$field->name}, $line->{$field->name}, 2);
+                $_opening->{$field->name} = bcadd($_opening->{$field->name}, $line->{$field->name}, 2);
+
+                $account = @$line->account ?: 'unknown';
+                $account_summary[$account] = bcadd($account_summary[$account] ?? '0', @$line->{$field->name} ?: '0.00', 2);
             }
-        }
-    }
-
-    foreach ($fields as $field) {
-        if (@$field->summary == 'sum') {
-            $summary->{$field->name} = bcadd($summary->{$field->name}, $line->{$field->name}, 2);
-            $_opening->{$field->name} = bcadd($_opening->{$field->name}, $line->{$field->name}, 2);
-
-            $account = @$line->account ?: 'unknown';
-            $account_summary[$account] = bcadd($account_summary[$account] ?? '0', @$line->{$field->name} ?: '0.00', 2);
         }
     }
 }
@@ -100,8 +101,8 @@ if (!$showas->value) {
 $mask_fields = [];
 $currentgroup = null;
 
-if ($has_date) {
-    $mask_fields = ['date'];
+if ($dateinfo) {
+    $mask_fields = [$dateinfo->field];
     $currentgroup = date('Y-m-d');
 }
 
@@ -109,20 +110,15 @@ $addable = $linetypes;
 
 ksort($account_summary);
 
-// if (isset($account_summary['jartransfer']) && !(float)$account_summary['jartransfer']) {
-//     unset($account_summary['jartransfer']);
-// }
-
 return compact(
     'account_summary',
     'addable',
     'currentgroup',
-    'dayperiod',
+    'dateinfo',
     'defaultgroup',
     'fields',
     'generic',
     'graphfields',
-    'has_date',
     'lines',
     'linetypes',
     'mask_fields',

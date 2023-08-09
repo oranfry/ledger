@@ -1,19 +1,16 @@
 <?php
 
-use ContextVariableSets\ContextVariableSet;
-
-if (!$daterange = ContextVariableSet::get('daterange')) {
+if (!$dateinfo) {
+    echo 'cant show a graph - no date field';
     return;
 }
 
-$from = $daterange->chunk->start();
-$to = $daterange->chunk->end();
 $graphfields ??= ['amount'];
-$graphfrom = $from ?? @array_keys($summaries)[1];
-$graphto = $to ?? @array_keys($summaries)[count($summaries) - 1];
+$graphfrom = $dateinfo->start ?? @array_keys($summaries)[1];
+$graphto = $dateinfo->end ?? @array_keys($summaries)[count($summaries) - 1];
 
 if (!@$summaries) {
-    echo 'cant show a graph';
+    echo 'cant show a graph - no data';
     return;
 }
 
@@ -32,8 +29,9 @@ foreach ($graphfields as $graphfield) {
 }
 
 if (!$range = $max - $min) {
-    echo 'cant show a graph';
-    return;
+    $max = 1;
+    $min = -1;
+    $range = 2;
 }
 
 for ($date = $graphfrom, $graphtotal_days = 0; strcmp($graphto, $date) >= 0; $date = date_shift($date, '+1 day'), $graphtotal_days++);

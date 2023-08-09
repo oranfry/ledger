@@ -16,7 +16,7 @@ class Config
         return false;
     }
 
-    public function dayperiod(): ?string
+    public function dateinfo(): ?object
     {
         return null;
     }
