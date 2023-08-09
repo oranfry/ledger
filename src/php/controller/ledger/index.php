@@ -5,7 +5,8 @@ use ContextVariableSets\Showas;
 use Ledger\Config;
 use obex\Obex;
 
-$config = Config::load($viewdata, @$_GET['version']);
+$config_name = defined('LEDGER_CONFIG') ? LEDGER_CONFIG : null;
+$config = Config::load($viewdata, $config_name, @$_GET['version']);
 
 $dayperiod = $config->dayperiod();
 $defaultgroup = $config->defaultgroup();
