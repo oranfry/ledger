@@ -46,6 +46,8 @@ if (count($graphfields) > 1) {
     $colors = ['b02323', '245881', '24813C', '815624', '672481'];
 }
 
+$collinear = fn (array $a, array $b, array $c): bool => $a[0] * ($b[1] - $c[1]) + $b[0] * ($c[1] - $a[1]) + $c[0] * ($a[1] - $b[1]) == 0;
+
 foreach ($graphfields as $i => $graphfield) {
     // TODO: decide whether to go this way
     // $min = $rmin; $max = $rmax;
@@ -68,7 +70,23 @@ foreach ($graphfields as $i => $graphfield) {
 
         $final = $summary->$graphfield ?? 0;
 
-        $points[] = [$day / $graphtotal_days, (($summary->$graphfield ?? 0) - $min) / $range];
+        $point = [
+            $day / $graphtotal_days,
+            (($summary->$graphfield ?? 0) - $min) / $range,
+        ];
+
+        // remove redundant intermediate points on a straight line
+
+        if (count($points) >= 2) {
+            $prev1 = $points[count($points) - 1];
+            $prev2 = $points[count($points) - 2];
+
+            if ($collinear($prev2, $prev1, $point)) {
+                array_pop($points);
+            }
+        }
+
+        $points[] = $point;
 
         if ($date == date('Y-m-d')) {
             $graphtoday = $day / $graphtotal_days;
