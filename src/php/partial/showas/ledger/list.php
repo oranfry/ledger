@@ -50,7 +50,7 @@
                     <tr class="<?= strcmp($line->{$dateinfo->field}, $currentgroup ?? '') ? '' : 'today' ?>">
                         <?php $grouptitle = $line->{$dateinfo->field}; ?>
                         <?php if (@$dateinfo->daylink): ?>
-                            <?php $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . $dateinfo->daylink($line->{$dateinfo->field}) . '&back=' . base64_encode($_SERVER['REQUEST_URI']); ?>
+                            <?php $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($dateinfo->daylink)($line->{$dateinfo->field}) . '&back=' . base64_encode($_SERVER['REQUEST_URI']); ?>
                             <?php $grouptitle = "<a class=\"incog\" href=\"$grouphref\">$grouptitle</a>"; ?>
                         <?php endif ?>
                         <td colspan="<?= $num_visible_cols ?>" style="line-height: 2em; font-weight: bold">
