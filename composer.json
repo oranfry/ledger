@@ -6,6 +6,7 @@
     },
     "name": "oranfry/ledger",
     "require": {
+        "oranfry/context-variable-sets": "*",
         "oranfry/tools": "*"
     }
 }

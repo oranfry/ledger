@@ -1,7 +1,7 @@
 <script>
     window.lines = <?= json_encode($lines); ?>;
 
-    softChangeInstance();
+    softCvsApply();
 </script>
 
 <?php $variant = defined('LEDGER_CONFIG') && LEDGER_CONFIG !== 'default' ? '/' . LEDGER_CONFIG : null; ?>

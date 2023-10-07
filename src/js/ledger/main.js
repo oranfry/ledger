@@ -225,7 +225,7 @@
         var handleSave = function() {
             saveLines([line], function(data, textStatus, request) {
                 $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'))
-                changeInstance();
+                cvsApply();
             });
         };
 
@@ -418,7 +418,7 @@
 
             saveLines(lines, function(data, textStatus, request) {
                 $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'))
-                changeInstance();
+                cvsApply();
             });
         }
     });

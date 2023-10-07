@@ -1,9 +1,15 @@
-<?php foreach ($variables as $var): ?>
-    <?php $var->display(); ?>
-<?php endforeach ?>
+<?php
 
+foreach ($variables as $var):
+    $var->display();
+endforeach;
+
+?>
 <div class="navset">
     <a class="delete-selected disabled" href="#"><i class="icon icon--gray icon--bin"></i></a>
 </div>
+<?php
 
-<?php $showas->display(); ?>
+if (count($showas->options) > 1):
+    $showas->display();
+endif;
