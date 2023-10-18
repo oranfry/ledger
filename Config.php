@@ -26,6 +26,11 @@ class Config
         return null;
     }
 
+    public function error(): ?string
+    {
+        return null;
+    }
+
     public function fields(): array
     {
         return [
@@ -37,9 +42,9 @@ class Config
         ];
     }
 
-    public function lines(): array
+    public function lines(): ?array
     {
-        return [];
+        return null;
     }
 
     public function linetypes(): array

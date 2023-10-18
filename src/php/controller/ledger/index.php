@@ -5,20 +5,13 @@ use Ledger\Config;
 use obex\Obex;
 use Tools\ContextVariableSets\Showas;
 
-$config_name = defined('LEDGER_CONFIG') ? LEDGER_CONFIG : null;
-$config = Config::load($viewdata, $config_name, @$_GET['version']);
+$ledger = Config::load(
+    $viewdata,
+    defined('LEDGER_CONFIG') ? LEDGER_CONFIG : null,
+    @$_GET['version'],
+);
 
-$dateinfo = $config->dateinfo();
-$defaultgroup = $config->defaultgroup();
-$fields = $config->fields();
-$lines = $config->lines();
-$linetypes = $config->linetypes();
-$opening = $config->opening();
-$showas_options = $config->showas();
-$title = $config->title();
-$variables = $config->variables();
-
-foreach ($variables as $variable) {
+foreach (($variables = $ledger->variables()) as $variable) {
     ContextVariableSet::put($variable->prefix, $variable);
 }
 
@@ -36,11 +29,14 @@ foreach ($variables as $variable) {
 //     }
 // }
 
+$fields = $ledger->fields();
 $generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, 'name')));
 $summaries = ['initial' => (object) []];
 $_opening = (object) [];
 
 $graphfields = [];
+
+$opening = $ledger->opening();
 
 foreach ($fields as $field) {
     if (@$field->summary == 'sum') {
@@ -52,7 +48,9 @@ foreach ($fields as $field) {
 
 $account_summary = [];
 
-foreach ($lines as $line) {
+$dateinfo = $ledger->dateinfo();
+
+foreach (($lines = $ledger->lines()) ?? [] as $line) {
     foreach ($fields as $field) {
         $line->{$field->name} ??= null;
 
@@ -86,7 +84,7 @@ foreach ($lines as $line) {
 
 $generic = (object) array_map(fn ($values) => count($values) == 1 ? reset($values) : null, $generic_builder);
 $showas = new Showas('ledger_showas');
-$showas->options = $showas_options;
+$showas->options = $ledger->showas();
 
 if (!$graphfields) {
     $showas->options = array_diff($showas->options, ['graph']);
@@ -106,9 +104,13 @@ if ($dateinfo) {
     $currentgroup = date('Y-m-d');
 }
 
-$addable = $linetypes;
+$addable = $linetypes = $ledger->linetypes();
 
 ksort($account_summary);
+
+$defaultgroup = $ledger->defaultgroup();
+$error = $lines === null ? $ledger->error() : null;
+$title = $ledger->title();
 
 return compact(
     'account_summary',
@@ -116,6 +118,7 @@ return compact(
     'currentgroup',
     'dateinfo',
     'defaultgroup',
+    'error',
     'fields',
     'generic',
     'graphfields',
