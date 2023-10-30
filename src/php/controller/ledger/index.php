@@ -112,6 +112,44 @@ $defaultgroup = $ledger->defaultgroup();
 $error = $lines === null ? $ledger->error() : null;
 $title = $ledger->title();
 
+if ($verified_data = $ledger->verifiedData()) {
+    foreach (array_keys($verified_data) as $group) {
+        $lastgroup = null;
+        $found = false;
+
+        foreach ($lines as $_line) {
+            if ($_line->{$dateinfo->field} == $group) {
+                $found = true;
+
+                break;
+            }
+
+            if ($_line->{$dateinfo->field} > $group) {
+                break;
+            }
+
+            $lastgroup = $_line->{$dateinfo->field};
+        }
+
+        if (!$found) {
+            $line = (object) ['_skip' => true, $dateinfo->field => $group];
+            $summary = (object) [];
+
+            foreach ($fields as $field) {
+                if (@$field->summary == 'sum') {
+                    $line->{$field->name} = '0.00';
+                    $summary->{$field->name} = $lastgroup ? $summaries[$lastgroup]->{$field->name} : $opening;
+                }
+            }
+
+            $lines[] = $line;
+            $summaries[$group] = $summary;;
+        }
+    }
+
+    usort($lines, fn ($a, $b) => $a->{$dateinfo->field} <=> $b->{$dateinfo->field});
+}
+
 return compact(
     'account_summary',
     'addable',
@@ -130,4 +168,5 @@ return compact(
     'summaries',
     'title',
     'variables',
+    'verified_data',
 );

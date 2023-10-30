@@ -11,11 +11,6 @@ class Config
     {
     }
 
-    public function cumulative(): bool
-    {
-        return false;
-    }
-
     public function dateinfo(): ?object
     {
         return null;
@@ -89,5 +84,10 @@ class Config
     public function variables(): array
     {
         return [];
+    }
+    
+    public function verifiedData(): ?array
+    {
+        return null;
     }
 }

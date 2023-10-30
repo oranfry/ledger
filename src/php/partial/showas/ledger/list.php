@@ -15,7 +15,6 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
     ?></thead><?php
     ?><tbody><?php
         for ($i = 0; $i <= count($lines); $i++):
-            $skip = false;
             unset($line);
 
             if ($i == count($lines)) :
@@ -28,14 +27,36 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
                 $skip = true;
             else :
                 $line = $lines[$i];
+                $skip = (bool) @$line->_skip;
             endif;
 
             if ($dateinfo && @$summaries[@$lastgroup] && ($i == count($lines) || @$line->{$dateinfo->field} != $lastgroup)):
                 $summary = $summaries[$lastgroup];
+                $verified = @$verified_data[$lastgroup];
 
                 ?><tr><?php
                     foreach ($fields as $field):
                         ?><td<?= $field->type == 'number' ? ' class="right"' : '' ?>><?php
+                            if ($correct = @$verified->{$field->name}):
+                                if (@$summary->{$field->name} == $correct) {
+                                    $icon = 'tick';
+                                    $color = 'green';
+                                } else {
+                                    $icon = 'times';
+                                    $color = 'red';
+                                }
+
+                                ?><i<?php
+                                ?> class="icon icon--<?= $color ?> icon--<?= $icon ?>"<?php 
+
+                                if (@$summary->{$field->name} != $correct):
+                                    $delta = $correct - $summary->{$field->name} ?? 0;
+                                    ?> title="<?= $correct ?>    [Δ<?= $delta ?>]"<?php
+                                endif;
+
+                                ?>></i> <?php
+                            endif;
+
                             if (@$summary->{$field->name}):
                                 ?><strong><?= @$field->prefix . $summary->{$field->name} ?></strong><?php
                             endif;
