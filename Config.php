@@ -37,7 +37,7 @@ class Config
         ];
     }
 
-    public function lines(): ?array
+    public function lines(string &$base_version = null): ?array
     {
         return null;
     }

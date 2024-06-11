@@ -1,8 +1,10 @@
-<script>
-    window.lines = <?= json_encode($lines); ?>;
+<script><?php
+    ?>window.lines = <?= json_encode($lines); ?>;<?php
+    ?>window.base_version = '<?= $base_version ?>';<?php
+    ?>softCvsApply();<?php
+?>
+</script><?php
 
-    softCvsApply();
-</script>
+$variant = defined('LEDGER_CONFIG') && LEDGER_CONFIG !== 'default' ? '/' . LEDGER_CONFIG : null;
 
-<?php $variant = defined('LEDGER_CONFIG') && LEDGER_CONFIG !== 'default' ? '/' . LEDGER_CONFIG : null; ?>
-<?php ss_include('src/php/partial/js/ledger-extra' . $variant . '.php', $viewdata); ?>
+ss_include('src/php/partial/js/ledger-extra' . $variant . '.php', $viewdata);

@@ -48,8 +48,9 @@
             method: 'post',
             contentType: false,
             processData: false,
-            beforeSend: function(request) {
-                request.setRequestHeader("X-Auth", getCookie('token'));
+            headers: {
+                'X-Auth': getCookie('token'),
+                'X-Base-Version': base_version,
             },
             data: JSON.stringify(lines),
             success: success,

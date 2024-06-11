@@ -49,8 +49,9 @@ foreach ($fields as $field) {
 $account_summary = [];
 
 $dateinfo = $ledger->dateinfo();
+$lines = $ledger->lines($base_version);
 
-foreach (($lines = $ledger->lines()) ?? [] as $line) {
+foreach ($lines ?? [] as $line) {
     foreach ($fields as $field) {
         $line->{$field->name} ??= null;
 
@@ -153,6 +154,7 @@ if ($verified_data = $ledger->verifiedData()) {
 return compact(
     'account_summary',
     'addable',
+    'base_version',
     'currentgroup',
     'dateinfo',
     'defaultgroup',
