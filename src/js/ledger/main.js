@@ -225,7 +225,7 @@
 
         var handleSave = function() {
             saveLines([line], function(data, textStatus, request) {
-                $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'))
+                $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'));
                 cvsApply();
             });
         };
