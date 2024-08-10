@@ -1,7 +1,12 @@
 <?php
 
 if (!$dateinfo) {
-    echo 'cant show a graph - no date field';
+    echo "Can't show a graph - no date field";
+    return;
+}
+
+if (!@$summaries) {
+    echo "Can't show a graph - no data";
     return;
 }
 
@@ -9,8 +14,8 @@ $graphfields ??= ['amount'];
 $graphfrom = $dateinfo->start ?? @array_keys($summaries)[1];
 $graphto = $dateinfo->end ?? @array_keys($summaries)[count($summaries) - 1];
 
-if (!@$summaries) {
-    echo 'cant show a graph - no data';
+if ($graphto == null || $graphfrom === null) {
+    echo "Can't show a graph - could not determine range";
     return;
 }
 
