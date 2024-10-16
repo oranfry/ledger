@@ -30,7 +30,11 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
                 $skip = (bool) @$line->_skip;
             }
 
-            if ($dateinfo && @$summaries[@$lastgroup] && ($i == count($lines) || @$line->{$dateinfo->field} != $lastgroup)) {
+            if (
+                $dateinfo
+                && @$summaries[@$lastgroup]
+                && ($i == count($lines) || @$line->{$dateinfo->field} != $lastgroup)
+            ) {
                 $summary = $summaries[$lastgroup];
                 $verified = @$verified_data[$lastgroup];
 
@@ -65,7 +69,10 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
                 ?></tr><?php
             }
 
-            if ($i == count($lines) || $dateinfo && $line->{$dateinfo->field} != $lastgroup) {
+            if (
+                $dateinfo &&
+                ($i == count($lines) || $line->{$dateinfo->field} != $lastgroup)
+            ) {
                 if (!$seen_today && strcmp($currentgroup, @$line->{$dateinfo->field}) < 0) {
                     unset($line);
                     $line = (object) [$dateinfo->field => $currentgroup];

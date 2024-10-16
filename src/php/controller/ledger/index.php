@@ -114,7 +114,7 @@ $error = $lines === null ? $ledger->error() : null;
 $title = $ledger->title();
 
 if ($verified_data = $ledger->verifiedData()) {
-    foreach (array_keys($verified_data) as $group) {
+    foreach (array_diff(array_keys($verified_data), ['initial']) as $group) {
         $lastgroup = null;
         $found = false;
 
