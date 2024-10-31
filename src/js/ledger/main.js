@@ -236,11 +236,9 @@
         generic_builder.id = [ids.join(',')];
 
         $.each(linetype.fields, function() {
-            let value, $checkbox = $line.find('[data-for="' + this.name + '"]');
+            let value;
 
-            if (generic_builder[this.name].length == 1 && (value = generic_builder[this.name][0])) {
-                $checkbox.prop('checked', true);
-
+            if (generic_builder[this.name].length == 1 && (value = generic_builder[this.name][0]) || !bulk) {
                 let $row = $line.find('[data-field-name="' + this.name + '"]');
                 let $field = $row.data('field');
 
@@ -270,9 +268,8 @@
 
         $line.find('[data-field-name]').each(function () {
             let $row = $(this);
-            let $includeme = $row.find('.includeme');
 
-            if ($includeme.length && !$includeme.prop('checked')) {
+            if (!$row.find('.includeme').prop('checked')) {
                 return;
             }
 
