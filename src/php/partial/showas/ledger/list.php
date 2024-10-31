@@ -125,14 +125,10 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
                     ?> data-id="<?= $line->id ?>"<?php
                     ?> data-type="<?= $line->type ?>"<?php
                 ?>><?php
-                    foreach ($fields as $fi => $field) {
+                    foreach ($fields as $field) {
                         $value = @$field->value ? computed_field_value($line, $field->value) : @$line->{$field->name};
 
                         ?><td data-name="<?= $field->name ?>" data-value="<?= htmlspecialchars($value ?? '') ?>" style="<?= $field->type == 'number' ? 'text-align: right;' : null ?>"><?php
-                            if (!$fi) {
-                                ?><div class="select-column"><input style="display: none" type="checkbox"></div><?php
-                            }
-
                             if ($field->type == 'icon') {
                                 ?><i class="icon icon--gray icon--<?= @$field->translate->{$value} ?? $value ?>"></i><?php
                             } elseif ($field->type == 'color') {
@@ -162,41 +158,4 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
 ?></nav><?php
 ?><br><br><?php
 
-foreach ($linetypes as $linetype) {
-    ?><div data-type="<?php echo $linetype->name ?>" class="line floatline edit-form" style="display: none"><?php
-        ?><div class="lineclose">close</div><?php
-        ?><h3><?= ucfirst($linetype->name) ?></h3><?php
-        ?><form method="post"><?php
-            foreach ($linetype->fields as $field) {
-                if ($field->type == 'file') {
-                    $value = @$line->{"{$field->name}_path"};
-                } else {
-                    $value = @$line->{$field->name} ?: @$_GET[$field->name] ?: @$field->default;
-                }
-
-                $options = @$field->options;
-
-                if ($value && $options && !in_array($value, $options)) {
-                    array_unshift($options, $value);
-                }
-
-                ?><div class="form-row"><?php
-                    ?><div class="form-row__label"><?= @$field->label ?? $field->name ?></div><?php
-                    ?><div class="form-row__value <?= @$field->readonly ? 'noedit' : null ?>"><?php
-                        ss_require("src/php/partial/fieldtype/{$field->type}.php", compact('field', 'value', 'options'));
-                    ?></div><?php
-                    ?><div style="clear: both"></div><?php
-                ?></div><?php
-            }
-
-            ?><div class="form-row"><?php
-                ?><div class="form-row__label">&nbsp;</div><?php
-                ?><div class="form-row__value"><?php
-                    ?><button class="saveline button button--main" type="button">Save</button><?php
-                    ?><button class="bulkadd button button--main" type="button" style="display: none">Bulk Add</button><?php
-                ?></div><?php
-                ?><div style="clear: both"></div><?php
-            ?></div><?php
-        ?></form><?php
-    ?></div><?php
-}
+?><div id="line-container"></div><?php

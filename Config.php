@@ -85,7 +85,7 @@ class Config
     {
         return [];
     }
-    
+
     public function verifiedData(): ?array
     {
         return null;
