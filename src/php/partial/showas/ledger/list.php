@@ -1,5 +1,19 @@
 <?php
 
+$showValue = function ($field, $value): void {
+    if ($field->type == 'icon') {
+        ?><i class="icon icon--gray icon--<?= @$field->translate->{$value} ?? $value ?>"></i><?php
+    } elseif ($field->type == 'color') {
+        ?><span style="display: inline-block; height: 1em; width: 1em; background-color: #<?= $value ?>;">&nbsp;</span><?php
+    } elseif ($field->type == 'number' && @$field->dp !== null) {
+        echo htmlspecialchars(bcadd('0', $value ?? '0', $field->dp));
+    } elseif ($field->type == 'number') {
+        echo htmlspecialchars($value ?? '0');
+    } else {
+        echo htmlspecialchars($value ?? '');
+    }
+};
+
 $lastgroup = 'initial';
 
 $num_visible_cols = count($fields);
@@ -129,16 +143,17 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
                         $value = @$field->value ? computed_field_value($line, $field->value) : @$line->{$field->name};
 
                         ?><td data-name="<?= $field->name ?>" data-value="<?= htmlspecialchars($value ?? '') ?>" style="<?= $field->type == 'number' ? 'text-align: right;' : null ?>"><?php
-                            if ($field->type == 'icon') {
-                                ?><i class="icon icon--gray icon--<?= @$field->translate->{$value} ?? $value ?>"></i><?php
-                            } elseif ($field->type == 'color') {
-                                ?><span style="display: inline-block; height: 1em; width: 1em; background-color: #<?= $value ?>;">&nbsp;</span><?php
-                            } elseif ($field->type == 'number' && @$field->dp !== null) {
-                                echo htmlspecialchars(bcadd('0', $value ?? '0', $field->dp));
-                            } elseif ($field->type == 'number') {
-                                echo htmlspecialchars($value ?? '0');
-                            } else {
-                                echo htmlspecialchars($value ?? '');
+                            if ($value && $limit = @$field->width_limit) {
+                                ?><div class="only-sub1200" style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: <?= $field->width_limit ?>;"><?php
+                                $showValue($field, $value);
+                                ?></div><?php
+                                ?><div class="only-super1200"><?php
+                            }
+
+                            $showValue($field, $value);
+
+                            if ($value && $limit = @$field->width_limit) {
+                                ?></div><?php
                             }
                         ?></td><?php
                     }
