@@ -5,20 +5,10 @@ namespace Ledger;
 use jars\contract\Client as JarsClient;
 use subsimple\Config as SubsimpleConfig;
 
-class Config
+abstract class Config
 {
     public function __construct(array $viewdata, ?string $version = null)
     {
-    }
-
-    public function dateinfo(): ?object
-    {
-        return null;
-    }
-
-    public function defaultgroup(): ?string
-    {
-        return null;
     }
 
     public function error(): ?string
@@ -37,10 +27,17 @@ class Config
         ];
     }
 
-    public function lines(string &$base_version = null): ?array
+    public function groupingInfo(): ?object
     {
         return null;
     }
+
+    public function lineGrouping(object $line): string
+    {
+        throw new Exception("Config name was specified but config->ledger is not an array");
+    }
+
+    abstract public function lines(string &$base_version = null): ?array;
 
     public function linetypes(): array
     {
