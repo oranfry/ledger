@@ -1,3 +1,4 @@
 [
-    "src/js/ledger/main.js"
+    "src/js/ledger/main.js",
+    "src/js/ledger/graph.js"
 ]

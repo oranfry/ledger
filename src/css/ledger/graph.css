@@ -1,0 +1,30 @@
+.graph-label {
+    position: absolute;
+    line-height: 1em;
+    transform-origin: 100% 100%;
+    font-size: 14px;
+}
+
+.graph-label.graph-label--bump-down {
+    margin-top: 1em;
+}
+
+.graph-label.graph-label--bump-down2 {
+    margin-top: 5.2em;
+}
+
+.graph-label.graph-label--bump-up {
+    margin-top: -1em;
+}
+
+.graph-label.graph-label--bump-up2 {
+    margin-top: -5.2em;
+}
+
+.graph-label.graph-label--bump-left {
+    margin-right: 1em;
+}
+
+.graph-label.graph-label--bump-right {
+    margin-left: 1em;
+}

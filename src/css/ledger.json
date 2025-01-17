@@ -1,3 +1,4 @@
 [
-    "src/css/ledger/style.css"
+    "src/css/ledger/style.css",
+    "src/css/ledger/graph.css"
 ]
