@@ -31,24 +31,67 @@ foreach (($variables = $ledger->variables()) as $variable) {
 
 $fields = $ledger->fields();
 $generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, 'name')));
-$summaries = ['initial' => (object) []];
 $_opening = (object) [];
-
+$summaries = [];
 $graphfields = [];
 
 $opening = $ledger->opening();
 
+// scan and prepare field summaries
+
 foreach ($fields as $field) {
-    if (@$field->summary == 'sum') {
-        $graphfields[] = $field->name;
-        $_opening->{$field->name} = $opening;
-        $summaries['initial']->{$field->name} = $opening;
+    if (!$field->summary ??= []) {
+        continue;
+    }
+
+    // expand 'max' to [{scheme:max}]
+
+    if (is_string($field->summary)) {
+        $field->summary = [$field->summary];
+    }
+
+    // expand ['max', 'min'] to [{scheme:max},{scheme:min}]
+
+    foreach ($field->summary as $i => $item) {
+        if (is_string($item)) {
+            $field->summary[$i] = $item = (object) [
+                'scheme' => $item,
+            ];
+        }
+
+        $item->scheme ??= 'last';
+        $item->identifier ??= $item->scheme;
+        $item->alias = $field->name . (count($field->summary) > 1 ? ' (' . $item->identifier . ')' : null);
+
+        $graphfields[] = $graphfield = (object) [
+            'alias' => $item->alias,
+            'color' => $item->color ?? $field->color ?? null,
+            'name' => $field->name,
+            'nearest' => $item->nearest ?? $field->nearest ?? null,
+            'scheme' => $item->scheme,
+            'unit' => $item->unit ?? $field->unit ?? null,
+        ];
+
+        switch ($item->scheme) {
+            case 'sum':
+                if (empty($summaries['initial'])) {
+                    $summaries['initial'] = (object) [];
+                }
+
+                $_opening->{$field->name} = $summaries['initial']->{$field->name} = $opening;
+                break;
+            case 'average':
+            case 'first':
+            case 'last':
+            case 'max':
+            case 'min':
+                $graphfield->bridge = false;
+        }
     }
 }
 
-$account_summary = [];
+$groupingInfo = $ledger->groupingInfo();
 
-$dateinfo = $ledger->dateinfo();
 $lines = $ledger->lines($base_version);
 
 foreach ($lines ?? [] as $line) {
@@ -60,24 +103,59 @@ foreach ($lines ?? [] as $line) {
         }
     }
 
-    if ($dateinfo) {
-        if (!isset($summaries[$line->{$dateinfo->field}])) {
-            $summaries[$line->{$dateinfo->field}] = $summary = (object) [];
+    if ($groupingInfo) {
+        $grouping = $line->_grouping = $ledger->lineGrouping($line);
+
+        if (!isset($summaries[$grouping])) {
+            $summaries[$grouping] = $summary = (object) [];
 
             foreach ($fields as $field) {
-                if (@$field->summary == 'sum') {
-                    $summary->{$field->name} = $_opening->{$field->name};
+                foreach ($field->summary as $fs) {
+                    if ($fs->scheme === 'sum') {
+                        $summary->{$fs->alias} = $_opening->{$field->name};
+                    }
                 }
             }
         }
 
         foreach ($fields as $field) {
-            if (@$field->summary == 'sum') {
-                $summary->{$field->name} = bcadd($summary->{$field->name}, $line->{$field->name}, 2);
-                $_opening->{$field->name} = bcadd($_opening->{$field->name}, $line->{$field->name}, 2);
+            foreach ($field->summary as $fs) {
+                $alias = $fs->alias;
 
-                $account = @$line->account ?: 'unknown';
-                $account_summary[$account] = bcadd($account_summary[$account] ?? '0', @$line->{$field->name} ?: '0.00', 2);
+                switch ($fs->scheme) {
+                    case 'sum':
+                        $summary->$alias = bcadd($summary->$alias, $line->{$field->name}, 2);
+                        $_opening->$alias = bcadd($_opening->$alias, $line->{$field->name}, 2);
+                        break;
+                    case 'average':
+                        $summary->$alias[] = $line->{$field->name};
+                        break;
+                    case 'first':
+                        $summary->$alias ??= $line->{$field->name};
+                        break;
+                    case 'last':
+                        $summary->$alias = $line->{$field->name};
+                        break;
+                    case 'max':
+                        $summary->$alias = max($summary->$alias ?? -INF, $line->{$field->name});
+                        break;
+                    case 'min':
+                        $summary->$alias = min($summary->$alias ?? INF, $line->{$field->name});
+                }
+            }
+        }
+    }
+}
+
+// summary scheme 'average' - time to resolve
+
+foreach ($fields as $field) {
+    foreach ($field->summary as $fs) {
+        if ($fs->scheme === 'average' && @$summary->$alias) {
+            $alias = $fs->alias;
+
+            foreach ($summaries as $summary) {
+                $summary->$alias = bcdiv(array_sum($summary->$alias), count($summary->$alias), $field->dp ?? 0);
             }
         }
     }
@@ -87,29 +165,15 @@ $generic = (object) array_map(fn ($values) => count($values) == 1 ? reset($value
 $showas = new Showas('ledger_showas');
 $showas->options = $ledger->showas();
 
-if (!$graphfields) {
-    $showas->options = array_diff($showas->options, ['graph']);
-}
-
 ContextVariableSet::put('showas', $showas);
 
 if (!$showas->value) {
-    $showas->value = 'list';
+    $showas->value = reset($showas->options);
 }
 
 $mask_fields = [];
-$currentgroup = null;
-
-if ($dateinfo) {
-    $mask_fields = [$dateinfo->field];
-    $currentgroup = date('Y-m-d');
-}
-
 $addable = $linetypes = $ledger->linetypes();
 
-ksort($account_summary);
-
-$defaultgroup = $ledger->defaultgroup();
 $error = $lines === null ? $ledger->error() : null;
 $title = $ledger->title();
 
@@ -119,27 +183,44 @@ if ($verified_data = $ledger->verifiedData()) {
         $found = false;
 
         foreach ($lines as $_line) {
-            if ($_line->{$dateinfo->field} == $group) {
+            if ($_line->_grouping == $group) {
                 $found = true;
 
                 break;
             }
 
-            if ($_line->{$dateinfo->field} > $group) {
+            if ($_line->_grouping > $group) {
                 break;
             }
 
-            $lastgroup = $_line->{$dateinfo->field};
+            $lastgroup = $_line->_grouping;
         }
 
         if (!$found) {
-            $line = (object) ['_skip' => true, $dateinfo->field => $group];
+            $line = (object) [
+                '_skip' => true,
+                '_grouping' => $group,
+            ];
+
             $summary = (object) [];
 
             foreach ($fields as $field) {
-                if (@$field->summary == 'sum') {
-                    $line->{$field->name} = '0.00';
-                    $summary->{$field->name} = $lastgroup ? $summaries[$lastgroup]->{$field->name} : $opening;
+                foreach ($field->summary as $fs) {
+                    $alias = $fs->alias;
+
+                    switch ($fs->scheme) {
+                        case 'sum':
+                            $line->{$field->name} = '0.00';
+                            $summary->$alias = $lastgroup ? $summaries[$lastgroup]->$alias : $opening;
+                            break;
+                        case 'average':
+                        case 'first':
+                        case 'last':
+                        case 'max':
+                        case 'min':
+                            $line->{$field->name} = '0.00';
+                            $summary->$alias = $summaries[$lastgroup]->$alias;
+                    }
                 }
             }
 
@@ -148,20 +229,17 @@ if ($verified_data = $ledger->verifiedData()) {
         }
     }
 
-    usort($lines, fn ($a, $b) => $a->{$dateinfo->field} <=> $b->{$dateinfo->field});
+    usort($lines, fn ($a, $b) => $a->_grouping <=> $b->_grouping);
 }
 
 return compact(
-    'account_summary',
     'addable',
     'base_version',
-    'currentgroup',
-    'dateinfo',
-    'defaultgroup',
     'error',
     'fields',
     'generic',
     'graphfields',
+    'groupingInfo',
     'lines',
     'linetypes',
     'mask_fields',
