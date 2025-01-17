@@ -17,7 +17,22 @@ $showValue = function ($field, $value): void {
 $lastgroup = 'initial';
 
 $num_visible_cols = count($fields);
-$seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->start ?? '0000-00-00') < 0 || strcmp($currentgroup, $dateinfo->end ?? '9999-12-31') > 0;
+
+$seen_today = !$groupingInfo
+    || !@$groupingInfo->currentgroup
+    || !@$groupingInfo->start
+    || strcmp($groupingInfo->currentgroup, $groupingInfo->start) < 0
+    || !$groupingInfo->end
+    || strcmp($groupingInfo->currentgroup, $groupingInfo->end) > 0;
+
+$hasSummaries = false;
+
+foreach ($fields as $field) {
+    foreach ($field->summary as $fs) {
+        $hasSummaries = true;
+        break 2;
+    }
+}
 
 ?><table class="easy-table"><?php
     ?><thead><?php
@@ -32,10 +47,10 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
             unset($line);
 
             if ($i == count($lines)) {
-                if (!$seen_today) {
-                    $line = (object) ['date' => $currentgroup];
-                } else {
-                    $line = (object) ['date' => null];
+                if ($groupingInfo) {
+                    $line = (object) [
+                        '_grouping' => $seen_today ? null : $groupingInfo->currentgroup,
+                    ];
                 }
 
                 $skip = true;
@@ -45,51 +60,74 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
             }
 
             if (
-                $dateinfo
-                && @$summaries[@$lastgroup]
-                && ($i == count($lines) || @$line->{$dateinfo->field} != $lastgroup)
+                @$summaries[@$lastgroup]
+                && ($i == count($lines) || @$line->_grouping != $lastgroup)
             ) {
                 $summary = $summaries[$lastgroup];
                 $verified = @$verified_data[$lastgroup];
 
-                ?><tr><?php
-                    foreach ($fields as $field) {
-                        ?><td<?= $field->type == 'number' ? ' class="right"' : '' ?>><?php
-                            if ($correct = @$verified->{$field->name}) {
-                                if (@$summary->{$field->name} == $correct) {
-                                    $icon = 'tick';
-                                    $color = 'green';
-                                } else {
-                                    $icon = 'times';
-                                    $color = 'red';
+                if ($hasSummaries) {
+                    ?><tr><?php
+                        foreach ($fields as $field) {
+                            ?><td<?= $field->type == 'number' ? ' class="right"' : '' ?>><?php
+                                if ($fs = @$field->summary[0]) {
+                                    $alias = $fs->alias;
+
+                                    if ($correct = @$verified->{$field->name}) {
+                                        if (@$summary->{$fs->alias} == $correct) {
+                                            $icon = 'tick';
+                                            $color = 'green';
+                                        } else {
+                                            $icon = 'times';
+                                            $color = 'red';
+                                        }
+
+                                        ?><i<?php
+                                        ?> class="icon icon--<?= $color ?> icon--<?= $icon ?>"<?php
+
+                                        if (@$summary->{$field->name} != $correct) {
+                                            $delta = $correct - $summary->{$field->name} ?? 0;
+                                            ?> title="<?= $correct ?>    [Δ<?= $delta ?>]"<?php
+                                        }
+
+                                        ?>></i> <?php
+                                    }
+
+                                    ?><strong<?php
+
+                                    if (count($field->summary) > 1) {
+                                        ?> title="<?php
+
+                                        foreach ($field->summary as $fsi => $fs) {
+                                            if ($fsi) {
+                                                echo "\n";
+                                            }
+
+                                            echo $fs->alias . ': ' . @$field->prefix . $summary->{$fs->alias};
+                                        }
+
+                                        ?>"<?php
+                                    }
+
+                                    ?>><?php
+
+                                    echo @$field->prefix . $summary->$alias;
+
+                                    ?></strong><?php
                                 }
-
-                                ?><i<?php
-                                ?> class="icon icon--<?= $color ?> icon--<?= $icon ?>"<?php
-
-                                if (@$summary->{$field->name} != $correct) {
-                                    $delta = $correct - $summary->{$field->name} ?? 0;
-                                    ?> title="<?= $correct ?>    [Δ<?= $delta ?>]"<?php
-                                }
-
-                                ?>></i> <?php
-                            }
-
-                            if (@$summary->{$field->name}) {
-                                ?><strong><?= @$field->prefix . $summary->{$field->name} ?></strong><?php
-                            }
-                        ?></td><?php
-                    }
-                ?></tr><?php
+                            ?></td><?php
+                        }
+                    ?></tr><?php
+                }
             }
 
             if (
-                $dateinfo &&
-                ($i == count($lines) || $line->{$dateinfo->field} != $lastgroup)
+                $groupingInfo &&
+                ($i == count($lines) || $line->_grouping != $lastgroup)
             ) {
-                if (!$seen_today && strcmp($currentgroup, @$line->{$dateinfo->field}) < 0) {
+                if (!$seen_today && strcmp($groupingInfo->currentgroup, $line->_grouping) < 0) {
                     unset($line);
-                    $line = (object) [$dateinfo->field => $currentgroup];
+                    $line = (object) ['_grouping' => $groupingInfo->currentgroup];
                     $i--;
                     $skip = true;
                 }
@@ -99,12 +137,12 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
                     ?><tbody><?php
                 }
 
-                if (@$line->{$dateinfo->field}) {
-                    ?><tr class="<?= strcmp($line->{$dateinfo->field}, $currentgroup ?? '') ? '' : 'today' ?>"><?php
-                        $grouptitle = $line->{$dateinfo->field};
+                if (@$line->_grouping) {
+                    ?><tr class="<?= strcmp($line->_grouping, $groupingInfo->currentgroup ?? '') ? '' : 'today' ?>"><?php
+                        $grouptitle = $line->_grouping;
 
-                        if (@$dateinfo->daylink) {
-                            $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($dateinfo->daylink)($line->{$dateinfo->field}) . '&back=' . base64_encode($_SERVER['REQUEST_URI']);
+                        if (@$groupingInfo->daylink) {
+                            $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($groupingInfo->daylink)($line->_grouping) . '&back=' . base64_encode($_SERVER['REQUEST_URI']);
                             $grouptitle = "<a class=\"incog\" href=\"$grouphref\">$grouptitle</a>";
                         }
 
@@ -116,13 +154,13 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
                                     ?><div class="inline-modal inline-modal--right"><?php
                                         ?><nav><?php
                                             foreach ($addable as $linetype) {
-                                                ?><a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $line->{$dateinfo->field} ?>"><i class="icon icon--gray icon--<?= $linetype->icon ?? 'doc' ?>"></i></a><?php
+                                                ?><a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $line->_grouping ?>"><i class="icon icon--gray icon--<?= $linetype->icon ?? 'doc' ?>"></i></a><?php
                                             }
                                         ?></nav><?php
                                     ?></div><?php
                                     ?><a class="inline-modal-trigger"><i class="icon icon--gray icon--plus"></i></a><?php
                                 } elseif (count($addable) == 1) {
-                                    ?><a href="#" class="trigger-add-line" data-type="<?= $addable[0]->name ?>" data-date="<?= $line->{$dateinfo->field} ?>"><i class="icon icon--gray icon--plus"></i></a><?php
+                                    ?><a href="#" class="trigger-add-line" data-type="<?= $addable[0]->name ?>" data-date="<?= $line->_grouping ?>"><i class="icon icon--gray icon--plus"></i></a><?php
                                 }
                             ?></div><?php
                         ?></td><?php
@@ -134,7 +172,7 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
                 ?><tr<?php
                     echo @$parent ? " data-parent=\"$parent\"" : '';
 
-                    ?> data-group="<?= @$line->{$dateinfo->field} ?>"<?php
+                    ?> data-group="<?= @$line->_grouping ?>"<?php
                     ?> class="linerow <?= @$line->broken ? 'broken' : null ?>"<?php
                     ?> data-id="<?= $line->id ?>"<?php
                     ?> data-type="<?= $line->type ?>"<?php
@@ -160,15 +198,15 @@ $seen_today = !$dateinfo || !@$currentgroup || strcmp($currentgroup, $dateinfo->
                 ?></tr><?php
             }
 
-            $lastgroup = @$line->{$dateinfo->field};
-            $seen_today = $seen_today || ($lastgroup ?? '') == $currentgroup;
+            $lastgroup = @$line->_grouping;
+            $seen_today = $seen_today || ($lastgroup ?? '') == $groupingInfo->currentgroup;
         }
     ?></tbody><?php
 ?></table><?php
 
 ?><nav><?php
     foreach ($addable as $linetype) {
-        ?><a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $defaultgroup ?>"><i class="icon icon--gray icon--plus"></i> <i class="icon icon--gray icon--<?= $linetype instanceof \ledger\linetype\Transferin ? 'arrowleftright' : $linetype->icon ?? 'doc' ?>"></i></a><?php
+        ?><a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $groupingInfo->defaultGrouping ?? null ?>"><i class="icon icon--gray icon--plus"></i> <i class="icon icon--gray icon--<?= $linetype instanceof \ledger\linetype\Transferin ? 'arrowleftright' : $linetype->icon ?? 'doc' ?>"></i></a><?php
     }
 ?></nav><?php
 ?><br><br><?php
