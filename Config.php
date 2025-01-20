@@ -70,7 +70,7 @@ abstract class Config
 
     public function showas(): array
     {
-        return ['list', 'spending', 'summaries', 'graph'];
+        return ['list', 'summaries', 'graph'];
     }
 
     public function title(): string
