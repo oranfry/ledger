@@ -15,14 +15,15 @@ if (!@$graphfields) {
     return;
 }
 
-if (!($groupings = $groupingInfo->groupings ?? null)) {
+if (!$groupings) {
     echo "Can't show a graph - could not determine groupings";
     return;
 }
 
 $trueScale = $groupingInfo->trueScale ?? true;
+$style = $groupingInfo->graphStyle ?? 'line';
 
-foreach ($groupingInfo->divs ?? [] as $key => $div) {
+foreach ($groupingInfo->divs ?? $groupings as $key => $div) {
     if (is_string($div)) {
         $groupingInfo->divs[$key] = (object) [
             'grouping' => $div,
@@ -110,11 +111,13 @@ foreach ($scales as $unit => $scale) {
 
 $scales = array_values($scales);
 
-$offset = (int) array_reduce($scales, function ($carry, $scale) use ($summaries) {
-    return $carry || array_reduce($scale['graphfields'], function ($carry, $graphfield) use ($summaries) {
-        return $carry || ($summaries['initial']->{$graphfield->alias} ?? null);
-    }, false);
-}, false);
+$offset = (int) (
+    array_reduce($scales, function ($carry, $scale) use ($summaries) {
+        return $carry || array_reduce($scale['graphfields'], function ($carry, $graphfield) use ($summaries) {
+            return $carry || ($summaries['initial']->{$graphfield->alias} ?? null);
+        }, false);
+    }, false)
+);
 
 foreach ($scales as $scaleKey => $scale) {
     foreach ($scale['graphfields'] as $graphfield) {
@@ -137,7 +140,7 @@ foreach ($scales as $scaleKey => $scale) {
             }
 
             $point = [
-                ($groupNum + $offset) / ($numGroupings + $offset - 1),
+                ($groupNum + $offset) / ($numGroupings + (int) ($style === 'bar') + $offset - 1),
                 (($summary->$alias ?? 0) - $scale['min']) / $scale['range'],
             ];
 
@@ -198,13 +201,13 @@ foreach ($groupings as $groupingNum => $grouping) {
 
     if ($div) {
         $divs[] = (object) (
-            ['x' => ($groupingNum + $offset) / ($numGroupings + $offset - 1)]
+            ['x' => ($groupingNum + $offset) / ($numGroupings + $offset + (int) ($style === 'bar') - 1)]
             + (array) $div
             + ['label' => $grouping]
         );
     }
 
-    if ($grouping === $groupingInfo->currentgroup) {
+    if ($grouping === ($groupingInfo->currentgroup ?? null)) {
         $graphtoday = [
             ($groupingNum + $offset) / ($numGroupings + $offset - 1),
             ($groupingNum + $offset + 1) / ($numGroupings + $offset - 1),
@@ -258,7 +261,7 @@ $guides = array_values($guides);
     // X-axis divisions labels
 
     foreach ($divs as $div) {
-        ?><div class="graph-label graph-label--x graph-label--bump-down" style="left: <?= $div->x * 100 ?>%" title="<?= $div->grouping ?>"><?= $div->label ?></div><?php
+        ?><div class="graph-label graph-label--x graph-label--bump-down" style="left: <?= ($div->x + ($style === 'bar' ? 0.5 / count($groupings) : 0)) * 100 ?>%" title="<?= $div->grouping ?>"><?= $div->label ?></div><?php
     }
 
     // Y-axis guide labels
@@ -318,11 +321,13 @@ $guides = array_values($guides);
 
 ?><script><?php
     ?>var graphSeries = <?= json_encode($series); ?>;<?php
+    ?>var numSeries = <?= count($series); ?>;<?php
     ?>var xAxisProp = <?= $xAxis ?>;<?php
     ?>var highlight = '<?= adjustBrightness(defined('HIGHLIGHT') ? HIGHLIGHT : REFCOL, 60); ?>';<?php
     ?>var today = <?= json_encode($graphtoday ?? null) ?>;<?php
     ?>var divs = <?= json_encode(array_map(fn ($div) => $div->x, $divs)); ?>;<?php
     ?>var guides = <?= json_encode($guides); ?>;<?php
+    ?>var style = '<?= $style; ?>';<?php
 ?>
 </script><?php
 

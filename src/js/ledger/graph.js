@@ -55,15 +55,20 @@
             }
 
             ctx.strokeStyle = "#efefef";
-
             ctx.strokeStyle = "#bbb";
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+
+            var xAxis = height * (1 - xAxisProp);
+
+            ctx.moveTo(0, xAxis + 1);
+            ctx.lineTo(width + 2, xAxis + 1);
+            ctx.stroke();
+
             ctx.lineWidth = 5;
 
             ctx.beginPath();
-            var xAxis = height * (1 - xAxisProp);
-
-            ctx.moveTo(0, xAxis + 2);
-            ctx.lineTo(width + 2, xAxis + 2);
 
             ctx.moveTo(0, 0);
             ctx.lineTo(width + 2, 0);
@@ -87,13 +92,32 @@
             for (const seriesName in graphSeries) {
                 var points = graphSeries[seriesName].points;
                 var color = graphSeries[seriesName].color;
+                let groupWidth = width / points.length;
+                let barWidth = Math.min(30, Math.floor(groupWidth / numSeries));
 
-                ctx.strokeStyle = color;
-                ctx.beginPath();
-                ctx.moveTo(width * points[0][0] + 1, height * (1 - points[0][1]) + 1);
+                if (style === 'bar') {
+                    ctx.fillStyle = color;
 
-                for (var i = 1; i < points.length; i++) {
-                    ctx.lineTo(Math.round(width * points[i][0] + 1), Math.round(height * (1 - points[i][1]) + 1));
+                    for (var i = 0; i < points.length; i++) {
+                        let base = height * (1 - xAxisProp),
+                            tip = height * (1 - points[i][1]),
+                            top = base > tip ? base : tip,
+                            bottom = base > tip ? tip : base,
+                            offset = (groupWidth - barWidth * numSeries) / 2 + barWidth * seriesNum,
+                            left = width * points[i][0] + offset + 1,
+                            barHeight = bottom - top;
+
+                        ctx.fillRect(left, top, barWidth, barHeight);
+                    }
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(width * points[0][0] + 1, height * (1 - points[0][1]) + 1);
+                    ctx.strokeStyle = color;
+
+                    for (var i = 1; i < points.length; i++) {
+                        ctx.lineTo(Math.round(width * points[i][0] + 1), Math.round(height * (1 - points[i][1]) + 1));
+                    }
+
                     ctx.stroke();
                 }
 
