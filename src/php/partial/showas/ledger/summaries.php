@@ -15,7 +15,7 @@ if (!@$summaries) {
 
 $seen_today = !$groupingInfo
     || !@$groupingInfo->currentgroup
-    || !in_array($groupingInfo->currentgroup, $groupingInfo->groupings);
+    || !in_array($groupingInfo->currentgroup, $groupings);
 
 ?><table class="easy-table"><?php
     ?><thead><?php
@@ -29,20 +29,19 @@ $seen_today = !$groupingInfo
     ?></thead><?php
 
     ?><tbody><?php
-        foreach (array_merge(['initial'], $groupingInfo->groupings) as $i => $group) {
-            if (!$summary = $summaries[$group] ?? null) {
-                continue;
-            }
+        $summaryKeys = array_keys($summaries);
 
-            $is_current = $i
-                && !$seen_today
+        foreach ($summaryKeys as $i => $grouping) {
+            $summary = $summaries[$grouping];
+
+            $is_current = !$seen_today
                 && $groupingInfo->currentgroup
-                && strcmp($groupingInfo->currentgroup, $groupingInfo->groupings[$i + 1] ?? null) < 0;
+                && strcmp($groupingInfo->currentgroup, $summaryKeys[$i + 1] ?? null) < 0;
 
             $seen_today = $seen_today || $is_current;
 
             ?><tr<?php if ($is_current) echo ' class="today"' ?>><?php
-                ?><td><?= $group ?></td><?php
+                ?><td><?= $grouping ?></td><?php
                 foreach ($graphfields as $graphfield) {
                     ?><td class="right"><strong><?= $summary->{$graphfield->alias} ?></strong></td><?php
                 }
