@@ -83,6 +83,7 @@ foreach ($fields as $field) {
 
                 $_opening->{$field->name} = $summaries['initial']->{$field->name} = $opening;
                 break;
+            case 'groupsum':
             case 'average':
             case 'first':
             case 'last':
@@ -94,8 +95,11 @@ foreach ($fields as $field) {
 }
 
 $groupingInfo = $ledger->groupingInfo();
-
 $lines = $ledger->lines($base_version);
+
+$groupings = $groupingInfo->groupings ?? [];
+
+// fill gaps with null and build the generic
 
 foreach ($lines ?? [] as $line) {
     foreach ($fields as $field) {
@@ -105,15 +109,45 @@ foreach ($lines ?? [] as $line) {
             $generic_builder[$field->name][] = $line->{$field->name};
         }
     }
+}
 
-    if ($groupingInfo) {
-        $grouping = $line->_grouping = $ledger->lineGrouping($line);
+// group lines
 
-        if (!isset($summaries[$grouping])) {
-            $summaries[$grouping] = $summary = (object) [];
+foreach ($lines ?? [] as $line) {
+    $grouping = $ledger->lineGrouping($line);
+
+    // either build group list dynamically, or check against static list
+
+    if (!in_array($grouping, $groupings)) {
+        if ($groupingInfo->groupings ?? null) {
+            throw new Exception('Unrecognized grouping [' . $grouping . ']');
+        } else {
+            $groupings[] = $grouping;
+        }
+    }
+
+    $line->_grouping = $grouping;
+}
+
+if (!($groupingInfo->groupings ?? null)) {
+    sort($groupings);
+}
+
+// sort by grouping
+
+usort($lines, fn ($a, $b) => array_search($a->_grouping, $groupings) <=> array_search($b->_grouping, $groupings));
+
+// compute summaries
+
+if ($groupingInfo) {
+    foreach ($lines ?? [] as $line) {
+        if (!$summary = $summaries[$line->_grouping] ?? null) {
+            $summary = $summaries[$line->_grouping] = (object) [];
 
             foreach ($fields as $field) {
                 foreach ($field->summary as $fs) {
+                    $summary->{$fs->alias} = '0.00';
+
                     if ($fs->scheme === 'sum') {
                         $summary->{$fs->alias} = $_opening->{$field->name};
                     }
@@ -127,8 +161,10 @@ foreach ($lines ?? [] as $line) {
 
                 switch ($fs->scheme) {
                     case 'sum':
-                        $summary->$alias = bcadd($summary->$alias, $line->{$field->name}, 2);
                         $_opening->$alias = bcadd($_opening->$alias, $line->{$field->name}, 2);
+                        // no break
+                    case 'groupsum':
+                        $summary->$alias = bcadd($summary->$alias, $line->{$field->name}, 2);
                         break;
                     case 'average':
                         $summary->$alias[] = $line->{$field->name};
@@ -213,8 +249,9 @@ if ($verified_data = $ledger->verifiedData()) {
 
                     switch ($fs->scheme) {
                         case 'sum':
-                            $line->{$field->name} = '0.00';
+                        case 'groupsum':
                             $summary->$alias = $lastgroup ? $summaries[$lastgroup]->$alias : $opening;
+                            $line->{$field->name} = '0.00';
                             break;
                         case 'average':
                         case 'first':
@@ -233,8 +270,6 @@ if ($verified_data = $ledger->verifiedData()) {
     }
 }
 
-usort($lines, fn ($a, $b) => @$a->_grouping <=> @$b->_grouping);
-
 return compact(
     'addable',
     'base_version',
@@ -243,6 +278,7 @@ return compact(
     'generic',
     'graphfields',
     'groupingInfo',
+    'groupings',
     'lines',
     'linetypes',
     'mask_fields',
