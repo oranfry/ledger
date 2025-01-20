@@ -66,6 +66,9 @@ foreach ($fields as $field) {
         $graphfields[] = $graphfield = (object) [
             'alias' => $item->alias,
             'color' => $item->color ?? $field->color ?? null,
+            'guides' => $item->guides ?? $field->guides ?? null,
+            'max' => $item->max ?? $field->max ?? null,
+            'min' => $item->min ?? $field->min ?? null,
             'name' => $field->name,
             'nearest' => $item->nearest ?? $field->nearest ?? null,
             'scheme' => $item->scheme,
@@ -228,9 +231,9 @@ if ($verified_data = $ledger->verifiedData()) {
             $summaries[$group] = $summary;;
         }
     }
-
-    usort($lines, fn ($a, $b) => $a->_grouping <=> $b->_grouping);
 }
+
+usort($lines, fn ($a, $b) => @$a->_grouping <=> @$b->_grouping);
 
 return compact(
     'addable',

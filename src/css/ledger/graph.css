@@ -3,6 +3,7 @@
     line-height: 1em;
     transform-origin: 100% 100%;
     font-size: 14px;
+    white-space: nowrap;
 }
 
 .graph-label.graph-label--bump-down {
@@ -27,4 +28,12 @@
 
 .graph-label.graph-label--bump-right {
     margin-left: 1em;
+}
+
+
+.graph-label--x {
+    transform-origin: top left;
+    transform: rotate(90deg);
+    top: 100%;
+    margin-left: 0.5em;
 }

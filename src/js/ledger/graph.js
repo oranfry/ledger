@@ -5,34 +5,59 @@
 
     if ($canvas.length && window.graphSeries) {
         var onResize = function() {
-            var width = Math.floor(window.innerWidth - 200 - (window.innerWidth >= 800 && 238 || 0));
-            var height = Math.floor(window.innerHeight - 200);
+            var width = Math.floor(window.innerWidth - 120 - (window.innerWidth >= 800 && 350 || 0));
+            var height = Math.min(width * 3 / 4, Math.floor(window.innerHeight - 200));
 
-            $('#bg-container').css({width: width + 'px', height: height + 'px'});
+            $('#bg-container').css({
+                width: width + 'px',
+                height: height + 'px'
+            });
 
-            $canvas.attr('width', width).attr('height', height);
+            $canvas.attr('width', width * 2).attr('height', height * 2).css('zoom', 0.5);
 
             var c = document.getElementById("bg");
             var ctx = c.getContext("2d");
+
             width = $canvas.width() - 2;
             height = $canvas.height() - 2;
 
-            ctx.lineWidth = 1;
+            if (today) {
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = '#' + highlight;
+                ctx.fillStyle = '#' + highlight;
+                ctx.beginPath();
+                ctx.fillRect(today[0] * width + 1, 1, (today[1] * width + 1) - (today[0] * width + 1), height + 1);
+            }
+
+            ctx.lineWidth = 3;
             ctx.lineJoin = 'miter';
             ctx.strokeStyle = "#efefef";
 
-            ctx.beginPath();
-
             if (typeof divs != 'undefined') {
                 for (var i = 0; i < divs.length; i++) {
+                    ctx.beginPath();
                     ctx.moveTo(width * divs[i] + 1, 0);
                     ctx.lineTo(width * divs[i] + 1, height + 1);
                     ctx.stroke();
                 }
             }
 
+            if (typeof guides != 'undefined') {
+                for (var i = 0; i < guides.length; i++) {
+                    ctx.beginPath();
+
+                    ctx.strokeStyle = guides[i].color;
+                    let y = height * (1 - guides[i].y) + 1;
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width + 1, y);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.strokeStyle = "#efefef";
+
             ctx.strokeStyle = "#bbb";
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 5;
 
             ctx.beginPath();
             var xAxis = height * (1 - xAxisProp);
@@ -54,16 +79,7 @@
 
             ctx.stroke();
 
-            if (today) {
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#' + highlight;
-                ctx.beginPath();
-                ctx.moveTo(today * width + 1, 1);
-                ctx.lineTo(today * width + 1, height + 1);
-                ctx.stroke();
-            }
-
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 3;
             ctx.lineJoin = 'round';
 
             var seriesNum = 0;
