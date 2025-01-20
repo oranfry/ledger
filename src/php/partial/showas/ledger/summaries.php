@@ -15,10 +15,7 @@ if (!@$summaries) {
 
 $seen_today = !$groupingInfo
     || !@$groupingInfo->currentgroup
-    || !@$groupingInfo->start
-    || strcmp($groupingInfo->currentgroup, $groupingInfo->start) < 0
-    || !$groupingInfo->end
-    || strcmp($groupingInfo->currentgroup, $groupingInfo->end) > 0;
+    || !in_array($groupingInfo->currentgroup, $groupingInfo->groupings);
 
 ?><table class="easy-table"><?php
     ?><thead><?php
@@ -32,12 +29,17 @@ $seen_today = !$groupingInfo
     ?></thead><?php
 
     ?><tbody><?php
-        foreach ($groupingInfo->groupings as $i => $group) {
+        foreach (array_merge(['initial'], $groupingInfo->groupings) as $i => $group) {
             if (!$summary = $summaries[$group] ?? null) {
                 continue;
             }
 
-            $seen_today = ($is_current = !$seen_today && strcmp($currentgroup, $groups[$i + 1] ?? null) < 0) || $seen_today;
+            $is_current = $i
+                && !$seen_today
+                && $groupingInfo->currentgroup
+                && strcmp($groupingInfo->currentgroup, $groupingInfo->groupings[$i + 1] ?? null) < 0;
+
+            $seen_today = $seen_today || $is_current;
 
             ?><tr<?php if ($is_current) echo ' class="today"' ?>><?php
                 ?><td><?= $group ?></td><?php
