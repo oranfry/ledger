@@ -19,11 +19,8 @@ $lastgroup = 'initial';
 $num_visible_cols = count($fields);
 
 $seen_today = !$groupingInfo
-    || !@$groupingInfo->currentgroup
-    || !@$groupingInfo->start
-    || strcmp($groupingInfo->currentgroup, $groupingInfo->start) < 0
-    || !$groupingInfo->end
-    || strcmp($groupingInfo->currentgroup, $groupingInfo->end) > 0;
+    || !@$groupingInfo->currentGrouping
+    || !in_array($groupingInfo->currentGrouping, $groupings);
 
 $hasSummaries = false;
 
@@ -49,7 +46,7 @@ foreach ($fields as $field) {
             if ($i == count($lines)) {
                 if ($groupingInfo) {
                     $line = (object) [
-                        '_grouping' => $seen_today ? null : $groupingInfo->currentgroup,
+                        '_grouping' => $seen_today ? null : $groupingInfo->currentGrouping,
                     ];
                 }
 
@@ -125,9 +122,9 @@ foreach ($fields as $field) {
                 $groupingInfo &&
                 ($i == count($lines) || $line->_grouping != $lastgroup)
             ) {
-                if (!$seen_today && strcmp($groupingInfo->currentgroup, $line->_grouping) < 0) {
+                if (!$seen_today && strcmp($groupingInfo->currentGrouping, $line->_grouping) < 0) {
                     unset($line);
-                    $line = (object) ['_grouping' => $groupingInfo->currentgroup];
+                    $line = (object) ['_grouping' => $groupingInfo->currentGrouping];
                     $i--;
                     $skip = true;
                 }
@@ -138,7 +135,7 @@ foreach ($fields as $field) {
                 }
 
                 if (@$line->_grouping) {
-                    ?><tr class="<?= strcmp($line->_grouping, $groupingInfo->currentgroup ?? '') ? '' : 'today' ?>"><?php
+                    ?><tr class="<?= strcmp($line->_grouping, $groupingInfo->currentGrouping ?? '') ? '' : 'today' ?>"><?php
                         $grouptitle = $line->_grouping;
 
                         if (@$groupingInfo->daylink) {
@@ -199,7 +196,7 @@ foreach ($fields as $field) {
             }
 
             $lastgroup = @$line->_grouping;
-            $seen_today = $seen_today || ($lastgroup ?? '') == $groupingInfo->currentgroup;
+            $seen_today = $seen_today || ($lastgroup ?? '') == $groupingInfo->currentGrouping;
         }
     ?></tbody><?php
 ?></table><?php

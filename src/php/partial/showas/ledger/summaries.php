@@ -14,8 +14,8 @@ if (!@$summaries) {
 }
 
 $seen_today = !$groupingInfo
-    || !@$groupingInfo->currentgroup
-    || !in_array($groupingInfo->currentgroup, $groupings);
+    || !@$groupingInfo->currentGrouping
+    || !in_array($groupingInfo->currentGrouping, $groupings);
 
 ?><table class="easy-table"><?php
     ?><thead><?php
@@ -35,8 +35,8 @@ $seen_today = !$groupingInfo
             $summary = $summaries[$grouping];
 
             $is_current = !$seen_today
-                && $groupingInfo->currentgroup
-                && strcmp($groupingInfo->currentgroup, $summaryKeys[$i + 1] ?? null) < 0;
+                && $groupingInfo->currentGrouping
+                && strcmp($groupingInfo->currentGrouping, $summaryKeys[$i + 1] ?? '') < 0;
 
             $seen_today = $seen_today || $is_current;
 

@@ -207,7 +207,7 @@ foreach ($groupings as $groupingNum => $grouping) {
         );
     }
 
-    if ($grouping === ($groupingInfo->currentgroup ?? null)) {
+    if ($grouping === ($groupingInfo->currentGrouping ?? null)) {
         $graphtoday = [
             ($groupingNum + $offset) / ($numGroupings + $offset - 1),
             ($groupingNum + $offset + 1) / ($numGroupings + $offset - 1),
