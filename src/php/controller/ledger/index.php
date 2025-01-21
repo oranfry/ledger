@@ -148,11 +148,11 @@ if ($groupingInfo) {
 
             foreach ($fields as $field) {
                 foreach ($field->summary as $fs) {
-                    $summary->{$fs->alias} = '0.00';
-
-                    if ($fs->scheme === 'sum') {
-                        $summary->{$fs->alias} = $_opening->{$field->name};
-                    }
+                    $summary->{$fs->alias} = match ($fs->scheme) {
+                        'sum' => $_opening->{$field->name},
+                        'average' => [],
+                        default => '0.00',
+                    };
                 }
             }
         }
