@@ -5,7 +5,7 @@ namespace Ledger;
 use jars\contract\Client as JarsClient;
 use subsimple\Config as SubsimpleConfig;
 
-abstract class Config
+class Config
 {
     public function __construct(array $viewdata, ?string $version = null)
     {
@@ -32,12 +32,15 @@ abstract class Config
         return null;
     }
 
-    public function lineGrouping(object $line): string
+    public function lineGrouping(object $line): ?string
     {
-        throw new Exception("Config name was specified but config->ledger is not an array");
+        return null;
     }
 
-    abstract public function lines(string &$base_version = null): ?array;
+    public function lines(string &$base_version = null): ?array
+    {
+        return null;
+    }
 
     public function linetypes(): array
     {
