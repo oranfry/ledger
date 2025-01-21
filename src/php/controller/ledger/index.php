@@ -135,7 +135,9 @@ if (!($groupingInfo->groupings ?? null)) {
 
 // sort by grouping
 
-usort($lines, fn ($a, $b) => array_search($a->_grouping, $groupings) <=> array_search($b->_grouping, $groupings));
+if ($lines) {
+    usort($lines, fn ($a, $b) => array_search($a->_grouping, $groupings) <=> array_search($b->_grouping, $groupings));
+}
 
 // compute summaries
 
