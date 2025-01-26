@@ -1,8 +1,12 @@
 <?php
 
 $showValue = function ($field, $value): void {
+    if ($field->transform) {
+        $value = ($field->transform)($value);
+    }
+
     if ($field->type == 'icon') {
-        ?><i class="icon icon--gray icon--<?= @$field->translate->{$value} ?? $value ?>"></i><?php
+        ?><i class="icon icon--gray icon--<?= $value ?>"></i><?php
     } elseif ($field->type == 'color') {
         ?><span style="display: inline-block; height: 1em; width: 1em; background-color: #<?= $value ?>;">&nbsp;</span><?php
     } elseif ($field->type == 'number' && @$field->dp !== null) {
@@ -35,7 +39,25 @@ foreach ($fields as $field) {
     ?><thead><?php
         ?><tr><?php
             foreach ($fields as $field) {
-                ?><th<?= $field->type == 'number' ? ' class="right"' : '' ?>><?= !@$field->supress_header && @$field->type != 'icon' ? $field->name : '' ?></th><?php
+                $alias = $field->alias ?? $field->name;
+
+                ?><th<?php
+
+                if ($field->type == 'number') {
+                    echo ' class="right"';
+                }
+
+                if ($alias !== $field->name) {
+                    echo ' title="' . $field->name . '"';
+                }
+
+                ?>><?php
+
+                if (!@$field->supress_header && @$field->type != 'icon') {
+                    echo $alias;
+                }
+
+                ?></th><?php
             }
         ?></tr><?php
     ?></thead><?php
