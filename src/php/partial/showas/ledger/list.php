@@ -1,8 +1,8 @@
 <?php
 
 $showValue = function ($field, $value): void {
-    if ($field->transform) {
-        $value = ($field->transform)($value);
+    if ($callback = $field->transform ?? null) {
+        $value = $callback($value);
     }
 
     if ($field->type == 'icon') {
