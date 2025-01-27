@@ -290,6 +290,11 @@ if ($lines) {
     });
 }
 
+uksort($summaries, function ($a, $b) use ($groupings): int {
+    return ($a !== 'initial') <=> ($b !== 'initial')
+        ?: array_search($a, $groupings) <=> array_search($b, $groupings);
+});
+
 return compact(
     'addable',
     'base_version',
