@@ -268,8 +268,24 @@ if ($verified_data = $ledger->verifiedData()) {
 
             $lines[] = $line;
             $summaries[$group] = $summary;;
+
+            if (!($groupingInfo->groupings ?? null)) {
+                $groupings[] = $group;
+            }
         }
     }
+}
+
+// sort lines by grouping again
+
+if (!($groupingInfo->groupings ?? null)) {
+    sort($groupings);
+}
+
+if ($lines) {
+    usort($lines, function ($a, $b) use ($groupings): int {
+        return array_search($a->_grouping, $groupings) <=> array_search($b->_grouping, $groupings);
+    });
 }
 
 return compact(
