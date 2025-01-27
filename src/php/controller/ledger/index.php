@@ -221,18 +221,18 @@ $error = $lines === null ? $ledger->error() : null;
 $title = $ledger->title();
 
 if ($verified_data = $ledger->verifiedData()) {
-    foreach (array_diff(array_keys($verified_data), ['initial']) as $group) {
+    foreach (array_diff(array_keys($verified_data), ['initial']) as $grouping) {
         $lastgroup = null;
         $found = false;
 
         foreach ($lines as $_line) {
-            if ($_line->_grouping == $group) {
+            if ($_line->_grouping === $grouping) {
                 $found = true;
 
                 break;
             }
 
-            if ($_line->_grouping > $group) {
+            if ($_line->_grouping > $grouping) {
                 break;
             }
 
@@ -242,7 +242,7 @@ if ($verified_data = $ledger->verifiedData()) {
         if (!$found) {
             $line = (object) [
                 '_skip' => true,
-                '_grouping' => $group,
+                '_grouping' => $grouping,
             ];
 
             $summary = (object) [];
@@ -269,10 +269,10 @@ if ($verified_data = $ledger->verifiedData()) {
             }
 
             $lines[] = $line;
-            $summaries[$group] = $summary;;
+            $summaries[$grouping] = $summary;
 
             if (!($groupingInfo->groupings ?? null)) {
-                $groupings[] = $group;
+                $groupings[] = $grouping;
             }
         }
     }
