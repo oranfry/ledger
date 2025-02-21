@@ -105,7 +105,7 @@ foreach ($fields as $field) {
                                         ?> class="icon icon--<?= $color ?> icon--<?= $icon ?>"<?php
 
                                         if (@$summary->{$field->name} != $correct) {
-                                            $delta = $correct - $summary->{$field->name} ?? 0;
+                                            $delta = bcsub($correct, $summary->{$field->name} ?? 0, 2);
                                             ?> title="<?= $correct ?>    [Δ<?= $delta ?>]"<?php
                                         }
 
