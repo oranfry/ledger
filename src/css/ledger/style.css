@@ -1,21 +1,36 @@
-.floatline {
-    position: absolute;
+#line-container {
+    position: fixed;
     z-index: 2000;
+    background: #0004;
+    overflow-y: auto;
+}
+
+.floatline {
+    position: relative;
+    z-index: 2001;
+    pointer-events: initial;
+}
+
+.line {
+    box-sizing: border-box;
+    display: inline-block;
+    background-color: #eee;
+    padding: 1em;
+    border-radius: 0.5em;
 }
 
 .line h3 {
     margin-top: 0;
+    margin-bottom: 1em;
 }
 
 .lineclose {
-    position: fixed;
+    position: absolute;
     top: 1em;
     right: 1em;
     cursor: pointer;
 }
 
-@media screen (min-width: 1199px) {
-    .lineclose {
-        display: none;
-    }
+.line.bulk .form-row .form-row__value {
+    padding-left: 4em;
 }

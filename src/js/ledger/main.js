@@ -1,6 +1,7 @@
 (function() {
     var $lastSelected = null;
     var $lineContainer = $('#line-container');
+    var lineContainerBg = null;
 
     var clearInputs = function() {
         $(this).find('input[type="file"]').each(function(){
@@ -122,6 +123,7 @@
             .append($('<h3>').html(String(linetype.name).charAt(0).toUpperCase() + String(linetype.name).slice(1)))
             .append($form = $('<form method="post">'));
 
+        $line.on('click', function (e) {e.stopPropagation();});
         $line.find('.lineclose').on('click', deselectAllLines);
 
         $.each(linetype.fields, function () {
@@ -175,6 +177,7 @@
         var $selected = $('.linerow.selected');
 
         $('.delete-selected').toggleClass('disabled', !$selected.length);
+        $lineContainer.css('display', $selected.length && 'block' || 'none');
 
         if ($selected.length == 0) {
             return;
@@ -431,20 +434,30 @@
     });
 
     var onResize = function() {
+        if (lineContainerBg === null) {
+            lineContainerBg = $lineContainer.css('background');
+        }
+
         if ($('.easy-table').length) {
-            if ($(window).width() >= 1200) {
-                $('.floatline').css({
-                    top: $('.easy-table').offset().top + 'px',
-                    left: ($('.easy-table').offset().left + $('.easy-table').outerWidth() + 30) + 'px',
-                    width: ''
-                });
-            } else {
-                $('.floatline').css({
-                    top: 0,
-                    left: 0,
-                    width: '100%'
-                });
-            }
+            let wide = $(window).width() >= 1200;
+            let margin = 30;
+            let top = $('.easy-table').offset().top;
+            let left = wide && ($('.easy-table').offset().left + $('.easy-table').outerWidth() + margin) || 0;
+            let height = $(window).height();
+            let width = $(window).width() - left;
+            let background = !wide && lineContainerBg || 'none';
+
+            $lineContainer.css({
+                'box-sizing': 'border-box',
+                top: 0,
+                left: left,
+                width: width + 'px',
+                height: height + 'px',
+                'padding-bottom': margin + 'px',
+                'padding-top': top + 'px',
+                'pointer-events': wide && 'none' || '',
+                background: background
+            });
         }
     }
 
@@ -456,4 +469,6 @@
 
     window.ledger_map_line = function (line) { return line; }
     window.ledger_unmap_line = function (line) { return line; }
+    $lineContainer.on('click', deselectAllLines);
+    refreshDisplayedLineEditor();
 })();
