@@ -123,8 +123,8 @@
             .append($('<h3>').html(String(linetype.name).charAt(0).toUpperCase() + String(linetype.name).slice(1)))
             .append($form = $('<form method="post">'));
 
-        $line.on('click', function (e) {e.stopPropagation();});
-        $line.find('.lineclose').on('click', deselectAllLines);
+        $line.on('click', function (e) { e.stopPropagation(); });
+        $line.find('.lineclose').on('click touchstart', deselectAllLines);
 
         $.each(linetype.fields, function () {
             let $label = $('<div class="form-row__label">')
