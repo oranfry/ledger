@@ -124,7 +124,7 @@
             .append($form = $('<form method="post">'));
 
         $line.on('click', function (e) { e.stopPropagation(); });
-        $line.find('.lineclose').on('click touchstart', deselectAllLines);
+        $line.find('.lineclose').on('mouseup touchstart', function (e) { e.stopPropagation(); e.preventDefault(); deselectAllLines(); });
 
         $.each(linetype.fields, function () {
             let $label = $('<div class="form-row__label">')
