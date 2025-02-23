@@ -441,7 +441,7 @@
         if ($('.easy-table').length) {
             let wide = $(window).width() >= 1200;
             let margin = 30;
-            let top = $('.easy-table').offset().top;
+            let top = wide && $('.easy-table').offset().top || margin;
             let left = wide && ($('.easy-table').offset().left + $('.easy-table').outerWidth() + margin) || 0;
             let height = $(window).height();
             let width = $(window).width() - left;
