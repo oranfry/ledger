@@ -403,6 +403,7 @@
 
         $lineContainer.append($line);
 
+        $lineContainer.css('display', 'block');
         onResize();
     });
 
