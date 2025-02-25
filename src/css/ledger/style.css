@@ -20,6 +20,7 @@
 }
 
 .line h3 {
+    text-align: center;
     margin-top: 0;
     margin-bottom: 1em;
 }
@@ -28,6 +29,13 @@
     position: absolute;
     top: 1em;
     right: 1em;
+    cursor: pointer;
+}
+
+.delete-selected {
+    position: absolute;
+    top: 1em;
+    left: 1em;
     cursor: pointer;
 }
 

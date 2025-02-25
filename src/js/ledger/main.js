@@ -30,7 +30,6 @@
 
     var deselectAllLines = function() {
         $('.linerow').removeClass('selected');
-        $('.delete-selected').addClass('disabled');
 
         refreshDisplayedLineEditor();
     };
@@ -120,8 +119,11 @@
         let $form, $line = $('<div class="line floatline edit-form"></div>')
             .data('type', linetype.name)
             .append($('<div class="lineclose"><i class="icon icon--times icon--gray"></i></div>'))
+            .append($('<a class="delete-selected" href="#" style="display: none"><i class="icon icon--gray icon--bin"></i></a>'))
             .append($('<h3>').html(String(linetype.name).charAt(0).toUpperCase() + String(linetype.name).slice(1)))
             .append($form = $('<form method="post">'));
+
+        $line.find('.delete-selected').on('click', deleteClicked);
 
         $line.on('click', function (e) { e.stopPropagation(); });
         $line.find('.lineclose').on('mouseup touchstart', function (e) { e.stopPropagation(); e.preventDefault(); deselectAllLines(); });
@@ -176,10 +178,9 @@
 
         var $selected = $('.linerow.selected');
 
-        $('.delete-selected').toggleClass('disabled', !$selected.length);
         $lineContainer.css('display', $selected.length && 'block' || 'none');
 
-        if ($selected.length == 0) {
+        if (!$selected.length) {
             return;
         }
 
@@ -199,11 +200,12 @@
         let $line = createLine(linetype);
         let bulk = $selected.length > 1;
 
+        $line.find('.delete-selected').show();
+        $line.find('.includeme').toggle(bulk);
+
         $line
             .data('bulk', bulk)
-            .toggleClass('bulk', bulk)
-            .find('.includeme')
-            .toggle(bulk);
+            .toggleClass('bulk', bulk);
 
         $lineContainer.append($line);
 
@@ -409,7 +411,7 @@
 
     $('.select-column input[type="checkbox"], .selectall').on('click', refreshDisplayedLineEditor);
 
-    $('.delete-selected').on('click', function(e) {
+    let deleteClicked = function(e) {
         e.preventDefault();
 
         var $selected = getSelected();
@@ -432,7 +434,7 @@
                 cvsApply();
             });
         }
-    });
+    };
 
     var onResize = function() {
         if (lineContainerBg === null) {
