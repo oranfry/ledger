@@ -30,10 +30,23 @@
     margin-left: 1em;
 }
 
-
-.graph-label--x {
+.graph-label.graph-label--x {
     transform-origin: top left;
     transform: rotate(90deg);
-    top: 100%;
     margin-left: 0.5em;
+}
+
+.graph-label.graph-label--x.graph-label--bump-up {
+    transform-origin: top left;
+    transform: rotate(-90deg);
+    margin-bottom: 1em;
+    margin-left: -0.5em;
+}
+
+.graph-label.graph-label--slanted.graph-label--bump-up {
+    transform: rotate(-45deg);
+}
+
+.graph-label.graph-label--slanted.graph-label--bump-down {
+    transform: rotate(45deg);
 }

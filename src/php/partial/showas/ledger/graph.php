@@ -130,19 +130,38 @@ foreach ($scales as $scaleKey => $scale) {
             $points[] = [0, ($initial - $scale['min']) / $scale['range']];
         }
 
+        $crossovers = [];
+        $prevValue = null;
+
         foreach ($groupings as $groupNum => $grouping) {
+            $x = ($groupNum + $offset) / ($numGroupings + (int) ($style === 'bar') + $offset - 1);
+
             if (isset($summaries[$grouping])) {
                 $summary = $summaries[$grouping];
                 $initial ??= $summary->$alias;
                 $final = $summary->$alias;
+
+                // find where the y value crosses guides
+
+                if ($prevValue !== null) {
+                    foreach ($graphfield->guides ?? [] as $guide) {
+                        if ($prevValue > $guide !== $summary->$alias > $guide) {
+                            $crossovers[] = (object) [
+                                'label' => $grouping,
+                                'x' => $x,
+                                'y' => ($guide - $scale['min']) / $scale['range'],
+                            ];
+                        }
+                    }
+                }
+
+                $prevValue = $summary->$alias;
             } elseif (!$bridge) {
                 continue;
             }
 
-            $point = [
-                ($groupNum + $offset) / ($numGroupings + (int) ($style === 'bar') + $offset - 1),
-                (($summary->$alias ?? 0) - $scale['min']) / $scale['range'],
-            ];
+            $y = (($summary->$alias ?? 0) - $scale['min']) / $scale['range'];
+            $point = [$x, $y];
 
             // remove redundant intermediate points on a straight line
 
@@ -165,6 +184,7 @@ foreach ($scales as $scaleKey => $scale) {
 
         $series[$alias] = (object) [
             'color' => $graphfield->color,
+            'crossovers' => $crossovers,
             'label' => $graphfield->alias,
             'points' => $points,
             'unit' => $graphfield->unit,
@@ -317,6 +337,22 @@ $guides = array_values($guides);
         }
     }
 
+    // Crossover labels
+
+    foreach ($series as $oneseries) {
+        foreach ($oneseries->crossovers as $crossover) {
+            if ($crossover->y < 0.5) {
+                $position = 'bottom: ' . ($crossover->y * 100) . '%';
+                $bump = 'graph-label--bump-up';
+            } else {
+                $position = 'top: ' . ((1 - $crossover->y) * 100) . '%';
+                $bump = 'graph-label--bump-down';
+            }
+
+            ?><div class="graph-label graph-label--x graph-label--slanted <?= $bump ?>" style="left: <?= $crossover->x * 100 ?>%; <?= $position ?>"><?= $crossover->label ?></div><?php
+
+        }
+    }
 ?></div><?php
 
 ?><script><?php
