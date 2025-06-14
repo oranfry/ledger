@@ -1,7 +1,6 @@
 #line-container {
     position: fixed;
     z-index: 2000;
-    background: #0004;
     overflow-y: auto;
 }
 
@@ -14,7 +13,6 @@
 .line {
     box-sizing: border-box;
     display: inline-block;
-    background-color: #eee;
     padding: 1em;
     border-radius: 0.5em;
 }
@@ -41,4 +39,24 @@
 
 .line.bulk .form-row .form-row__value {
     padding-left: 4em;
+}
+
+@media (prefers-color-scheme: light) {
+    #line-container {
+        background: #0004;
+    }
+
+    .line {
+        background-color: #eee;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    #line-container {
+        background: #fff4;
+    }
+
+    .line {
+        background-color: #333;
+    }
 }
