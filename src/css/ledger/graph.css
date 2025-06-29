@@ -14,12 +14,20 @@
     margin-top: 5.2em;
 }
 
+.graph-label.graph-label--bump-down-half {
+    margin-top: 0.5em;
+}
+
 .graph-label.graph-label--bump-up {
     margin-top: -1em;
 }
 
 .graph-label.graph-label--bump-up2 {
     margin-top: -5.2em;
+}
+
+.graph-label.graph-label--bump-up-half {
+    margin-top: -0.5em;
 }
 
 .graph-label.graph-label--bump-left {

@@ -310,7 +310,7 @@ $guides = array_values($guides);
         ?><div class="graph-label <?= $bump ?> <?= $scale['min'] ? null : 'graph-label--bump-up' ?>" style="top: 100%; <?= $position ?>: 100%; <?= $color ?>; margin-top: -0.5em"><?= $scale['min'] ?></div><?php
 
         // Unit
-        ?><div class="graph-label <?= $bump ?>" style="top: 50%; <?= $position ?>: 100%; <?= $color ?>"><strong><?= $scale['unit'] ?></strong></div><?php
+        ?><div class="graph-label graph-label--bump-up-half <?= $bump ?>" style="top: 50%; <?= $position ?>: 100%; <?= $color ?>"><strong><?= $scale['unit'] ?></strong></div><?php
 
         if ($scale['showZero']) {
             ?><div class="graph-label <?= $bump ?> graph-label--bump-up" style="top: <?= $scale['zeroTop'] ?>%; right: 100%; <?= $color ?>">0</div><?php
