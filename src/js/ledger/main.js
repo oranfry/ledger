@@ -270,7 +270,7 @@
             });
         }
 
-        if (Object.keys(sums).length) {
+        if (Object.keys(sums).length && $selected.length > 1) {
             let $sums = $('<div id="sums"></div>');
 
             $.each(sum_fields, function () {
