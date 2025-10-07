@@ -270,25 +270,27 @@
             });
         }
 
-        let $sums = $('<div id="sums"></div>');
+        if (Object.keys(sums).length) {
+            let $sums = $('<div id="sums"></div>');
 
-        $.each(sum_fields, function () {
-            $sums.append('<div class="form-row"><div class="form-row__label">Σ&nbsp;' + this + '</div><div class="form-row__value"><input class="field value disabled" disabled="disabled" type="text" autocomplete="off" value="' + sums[this] + '"></div><div style="clear: both"></div></div>');
-        });
+            $.each(sum_fields, function () {
+                $sums.append('<div class="form-row"><div class="form-row__label">Σ&nbsp;' + this + '</div><div class="form-row__value"><input class="field value disabled" disabled="disabled" type="text" autocomplete="off" value="' + sums[this] + '"></div><div style="clear: both"></div></div>');
+            });
 
-        if (typeof $line !== 'undefined') {
-            $lineContainer.append($('<br><br>'));
+            if (typeof $line !== 'undefined') {
+                $lineContainer.append($('<br><br>'));
+            }
+
+            $lineContainer.append(
+                $sums
+                    .on('click', function (e) {
+                        e.stopPropagation();
+                    })
+                    .css({
+                        width: Math.min(typeof $line === 'undefined' && 320 || $line.outerWidth()) + 'px',
+                    })
+            );
         }
-
-        $lineContainer.append(
-            $sums
-                .on('click', function (e) {
-                    e.stopPropagation();
-                })
-                .css({
-                    width: Math.min(typeof $line === 'undefined' && 320 || $line.outerWidth()) + 'px',
-                })
-        );
     };
 
     let saveLine = function(e) {
