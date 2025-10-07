@@ -175,6 +175,7 @@
 
     var refreshDisplayedLineEditor = function() {
         $lineContainer.empty();
+        $('#sums').remove();
 
         var $selected = $('.linerow.selected');
 
@@ -192,70 +193,102 @@
             return line.type;
         }))];
 
-        if (linetypes.length > 1) { // multiple linetypes not supported for now
-            return;
-        }
-
-        let linetype = window.linetypes[linetypes[0]];
-        let $line = createLine(linetype);
-        let bulk = $selected.length > 1;
-
-        $line.find('.delete-selected').show();
-        $line.find('.includeme').toggle(bulk);
-
-        $line
-            .data('bulk', bulk)
-            .toggleClass('bulk', bulk);
-
-        $lineContainer.append($line);
-
-        onResize();
-
-        let generic_builder = {}, ids = [];
-
-        $.each(linetype.fields, function(){
-            generic_builder[this.name] = [];
-        });
+        let sums = {};
 
         $selected.each(function(index) {
-            let $linerow = $(this);
-            let line = lines[index];
-
-            ids.push($linerow.data('id'))
-
-            $.each(linetype.fields, function() {
-                let name = this.name + '';
-
-                if (name === 'id') {
-                    return;
+            $.each(sum_fields, function () {
+                if (typeof(sums[this]) == 'undefined') {
+                    sums[this] = 0;
                 }
 
-                let value = line[name];
-
-                if (generic_builder[name].length < 2 && generic_builder[name].indexOf(value) == -1) {
-                     generic_builder[name].push(value);
-                }
+                sums[this] = parseFloat((sums[this] + lines[index][this]).toFixed(2));
             });
         });
 
-        generic_builder.id = [ids.join(',')];
+        let $line;
 
-        $.each(linetype.fields, function() {
-            let value;
+        if (linetypes.length == 1) { // multiple linetypes not supported for now
+            let linetype = window.linetypes[linetypes[0]];
+            $line = createLine(linetype);
+            let bulk = $selected.length > 1;
 
-            if (generic_builder[this.name].length == 1 && (value = generic_builder[this.name][0]) || !bulk) {
-                let $row = $line.find('[data-field-name="' + this.name + '"]');
-                let $field = $row.data('field');
+            $line.find('.delete-selected').show();
+            $line.find('.includeme').toggle(bulk);
 
-                $row.find('.includeme').prop('checked', !this.readonly);
+            $line
+                .data('bulk', bulk)
+                .toggleClass('bulk', bulk);
 
-                if (this.name === 'id' || this.readonly) {
-                    $row.find('.includeme').hide();
+            $lineContainer.append($line);
+
+            onResize();
+
+            let generic_builder = {}, ids = [];
+
+            $.each(linetype.fields, function(){
+                generic_builder[this.name] = [];
+            });
+
+            $selected.each(function(index) {
+                let $linerow = $(this);
+                let line = lines[index];
+
+                ids.push($linerow.data('id'))
+
+                $.each(linetype.fields, function() {
+                    let name = this.name + '';
+
+                    if (name === 'id') {
+                        return;
+                    }
+
+                    let value = line[name];
+
+                    if (generic_builder[name].length < 2 && generic_builder[name].indexOf(value) == -1) {
+                        generic_builder[name].push(value);
+                    }
+                });
+            });
+
+            generic_builder.id = [ids.join(',')];
+
+            $.each(linetype.fields, function() {
+                let value;
+
+                if (generic_builder[this.name].length == 1 && (value = generic_builder[this.name][0]) || !bulk) {
+                    let $row = $line.find('[data-field-name="' + this.name + '"]');
+                    let $field = $row.data('field');
+
+                    $row.find('.includeme').prop('checked', !this.readonly);
+
+                    if (this.name === 'id' || this.readonly) {
+                        $row.find('.includeme').hide();
+                    }
+
+                    window.fieldtypes.types[this.type].set($field, value);
                 }
+            });
+        }
 
-                window.fieldtypes.types[this.type].set($field, value);
-            }
+        let $sums = $('<div id="sums"></div>');
+
+        $.each(sum_fields, function () {
+            $sums.append('<div class="form-row"><div class="form-row__label">Σ&nbsp;' + this + '</div><div class="form-row__value"><input class="field value disabled" disabled="disabled" type="text" autocomplete="off" value="' + sums[this] + '"></div><div style="clear: both"></div></div>');
         });
+
+        if (typeof $line !== 'undefined') {
+            $lineContainer.append($('<br><br>'));
+        }
+
+        $lineContainer.append(
+            $sums
+                .on('click', function (e) {
+                    e.stopPropagation();
+                })
+                .css({
+                    width: Math.min(typeof $line === 'undefined' && 320 || $line.outerWidth()) + 'px',
+                })
+        );
     };
 
     let saveLine = function(e) {
