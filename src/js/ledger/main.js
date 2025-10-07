@@ -201,7 +201,7 @@
                     sums[this] = 0;
                 }
 
-                sums[this] = parseFloat((sums[this] + lines[index][this]).toFixed(2));
+                sums[this] = parseFloat((sums[this] + parseFloat(lines[index][this] ?? '0')).toFixed(2));
             });
         });
 
