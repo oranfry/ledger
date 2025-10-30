@@ -143,7 +143,7 @@ foreach ($scales as $scaleKey => $scale) {
 
                 // find where the y value crosses guides
 
-                if ($prevValue !== null) {
+                if (($graphfield->show_crossovers ?? false) && $prevValue !== null) {
                     foreach ($graphfield->guides ?? [] as $guide) {
                         if ($prevValue > $guide !== $summary->$alias > $guide) {
                             $crossovers[] = (object) [
