@@ -2,7 +2,7 @@
 
 namespace OranFry\Ledger;
 
-class Router extends OranFry\Subsimple\Router
+class Router extends \OranFry\Subsimple\Router
 {
     protected static $routes = [
         'GET /' => ['PAGE' => 'ledger/index'],
