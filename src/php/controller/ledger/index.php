@@ -1,9 +1,9 @@
 <?php
 
-use ContextVariableSets\ContextVariableSet;
-use Ledger\Config;
-use obex\Obex;
-use Tools\ContextVariableSets\Showas;
+use OranFry\ContextVariableSets\ContextVariableSet;
+use OranFry\Ledger\Config;
+use OranFry\Obex\Obex;
+use OranFry\Tools\ContextVariableSets\Showas;
 
 $ledger = Config::load(
     $viewdata,

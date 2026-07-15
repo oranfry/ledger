@@ -1,6 +1,6 @@
 <?php
 
-namespace Ledger;
+namespace OranFry\Ledger;
 
 class Exception extends \Exception
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Ledger;
+namespace OranFry\Ledger;
 
-use jars\contract\Client as JarsClient;
-use subsimple\Config as SubsimpleConfig;
+use OranFry\Jars\Contract\Client as JarsClient;
+use OranFry\Subsimple\Config as SubsimpleConfig;
 
 class Config
 {

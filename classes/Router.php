@@ -1,8 +1,8 @@
 <?php
 
-namespace Ledger;
+namespace OranFry\Ledger;
 
-class Router extends \subsimple\Router
+class Router extends OranFry\Subsimple\Router
 {
     protected static $routes = [
         'GET /' => ['PAGE' => 'ledger/index'],

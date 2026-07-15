@@ -1,7 +1,6 @@
 <?php
 
-use ContextVariableSets\ContextVariableSet;
-
+use OranFry\ContextVariableSets\ContextVariableSet;
 
 if (!$groupingInfo) {
     echo "Can't show a summaries - no grouping info";

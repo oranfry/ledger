@@ -1,7 +1,7 @@
 {
     "autoload": {
         "psr-4": {
-            "Ledger\\": "classes"
+            "OranFry\\Ledger\\": "classes"
         }
     },
     "name": "oranfry/ledger",
