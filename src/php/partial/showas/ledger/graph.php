@@ -134,7 +134,9 @@ foreach ($scales as $scaleKey => $scale) {
         $prevValue = null;
 
         foreach ($groupings as $groupNum => $grouping) {
-            $x = ($groupNum + $offset) / ($numGroupings + (int) ($style === 'bar') + $offset - 1);
+            $numer = $groupNum + $offset;
+            $denom = $numGroupings + (int) ($style === 'bar') + $offset - 1;
+            $x = $denom === 0 ? 0 : ($numer / $denom);
 
             if (isset($summaries[$grouping])) {
                 $summary = $summaries[$grouping];
@@ -220,8 +222,12 @@ foreach ($groupings as $groupingNum => $grouping) {
     $div = array_values(array_filter($groupingInfo->divs ?? [], fn ($div) => $div->grouping === $grouping))[0] ?? null;
 
     if ($div) {
+        $numer = $groupingNum + $offset;
+        $denom = $numGroupings + $offset + (int) ($style === 'bar') - 1;
+        $x = $denom === 0 ? 0 : ($numer / $denom);
+
         $divs[] = (object) (
-            ['x' => ($groupingNum + $offset) / ($numGroupings + $offset + (int) ($style === 'bar') - 1)]
+            compact('x')
             + (array) $div
             + ['label' => $grouping]
         );
