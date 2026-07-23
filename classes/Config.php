@@ -7,7 +7,7 @@ use OranFry\Subsimple\Config as SubsimpleConfig;
 
 class Config
 {
-    public function __construct(array $viewdata, ?string $version = null)
+    public function __construct(array $viewdata, ?int $version = null)
     {
     }
 
@@ -37,7 +37,7 @@ class Config
         return null;
     }
 
-    public function lines(?string &$base_version = null): ?array
+    public function lines(?int &$base_version = null): ?array
     {
         return null;
     }
@@ -47,7 +47,7 @@ class Config
         return [];
     }
 
-    public static function load(array $viewdata, ?string $config_name = null, ?string $version = null)
+    public static function load(array $viewdata, ?string $config_name = null, ?int $version = null)
     {
         $configs = SubsimpleConfig::get()->ledger;
 
