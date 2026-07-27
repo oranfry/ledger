@@ -1,10 +1,12 @@
 <?php
 
 if (!function_exists('get_stats')) {
-    function get_stats(array $arr, bool $sample = true): array {
+    function get_stats(array $arr, bool $sample = true): array
+    {
         $count = count($arr);
+
         if ($count === 0) {
-            return [];
+            return ['count' => 0];
         }
 
         // Min and Max
@@ -16,7 +18,9 @@ if (!function_exists('get_stats')) {
 
         // Median
         sort($arr);
+
         $middle = floor($count / 2);
+
         if ($count % 2 === 0) {
             $median = ($arr[$middle - 1] + $arr[$middle]) / 2;
         } else {
@@ -33,14 +37,7 @@ if (!function_exists('get_stats')) {
         $denom = $sample ? ($count - 1) : $count;
         $stdDev = $denom > 0 ? sqrt($variance / $denom) : 0.0;
 
-        return [
-            'count' => $count,
-            'min' => $min,
-            'max' => $max,
-            'mean' => $mean,
-            'median' => $median,
-            'stdDev' => $stdDev
-        ];
+        return compact('count','min','max','mean','median','stdDev');
     }
 }
 
@@ -58,26 +55,29 @@ foreach ($fields as $field) {
                     ?><th>Count</th><?php
                     ?><td><?= $stats['count'] ?><?php
                 ?></tr><?php
-                ?><tr><?php
-                    ?><th>Min</th><?php
-                    ?><td><?= $stats['min'] ?><?php
-                ?></tr><?php
-                ?><tr><?php
-                    ?><th>Max</th><?php
-                    ?><td><?= $stats['max'] ?><?php
-                ?></tr><?php
-                ?><tr><?php
-                    ?><th>Mean</th><?php
-                    ?><td><?= $stats['mean'] ?><?php
-                ?></tr><?php
-                ?><tr><?php
-                    ?><th>Median</th><?php
-                    ?><td><?= $stats['median'] ?><?php
-                ?></tr><?php
-                ?><tr><?php
-                    ?><th>Std. Dev.</th><?php
-                    ?><td><?= $stats['stdDev'] ?><?php
-                ?></tr><?php
+
+                if ($stats['count']) {
+                    ?><tr><?php
+                        ?><th>Min</th><?php
+                        ?><td><?= $stats['min'] ?><?php
+                    ?></tr><?php
+                    ?><tr><?php
+                        ?><th>Max</th><?php
+                        ?><td><?= $stats['max'] ?><?php
+                    ?></tr><?php
+                    ?><tr><?php
+                        ?><th>Mean</th><?php
+                        ?><td><?= $stats['mean'] ?><?php
+                    ?></tr><?php
+                    ?><tr><?php
+                        ?><th>Median</th><?php
+                        ?><td><?= $stats['median'] ?><?php
+                    ?></tr><?php
+                    ?><tr><?php
+                        ?><th>Std. Dev.</th><?php
+                        ?><td><?= $stats['stdDev'] ?><?php
+                    ?></tr><?php
+                }
             ?></tbody><?php
         ?></table><?php
     }
