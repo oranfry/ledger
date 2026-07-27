@@ -73,7 +73,12 @@ class Config
 
     public function showas(): array
     {
-        return ['list', 'summaries', 'graph'];
+        return [
+            'list',
+            'summaries',
+            'stats',
+            'graph',
+        ];
     }
 
     public function title(): string
