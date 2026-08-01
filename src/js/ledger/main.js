@@ -71,6 +71,7 @@
 
     var modifySelection = function(append, range) {
         var $linerow = $(this);
+        var deselecting = $linerow.hasClass('selected');
         var line = getLine($linerow.attr('data-type'), $linerow.attr('data-id'));
 
         if (!line) {
@@ -83,10 +84,6 @@
         if (!$line) {
             alert('Could not find the linetype form for  ' + line.type);
             return;
-        }
-
-        if (!append) {
-            $('.linerow').not($linerow).removeClass('selected');
         }
 
         if (range && $lastSelected && $lastSelected != $linerow) {
@@ -112,7 +109,11 @@
             $linerow = $found;
         }
 
-        $linerow.addClass('selected');
+        if (!append) {
+            $('.linerow').not($linerow).removeClass('selected');
+        }
+
+        $linerow.toggleClass('selected', !deselecting);
     };
 
     var createLine = function (linetype) {
@@ -407,6 +408,10 @@
         }
 
         refreshDisplayedLineEditor();
+
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+            window.getSelection().removeAllRanges();
+        }
     });
 
     $('.trigger-add-line').on('click', function(event){
