@@ -183,6 +183,8 @@
         $lineContainer.css('display', $selected.length && 'block' || 'none');
 
         if (!$selected.length) {
+            $lastSelected = null;
+            $('.linerow').removeClass('last-selected');
             return;
         }
 
@@ -405,6 +407,8 @@
 
         if (!e.shiftKey || !$lastSelected) {
             $lastSelected = $(this);
+            $('.linerow').not($lastSelected).removeClass('last-selected');
+            $lastSelected.addClass('last-selected');
         }
 
         refreshDisplayedLineEditor();
