@@ -5,6 +5,8 @@ use OranFry\Ledger\Config;
 use OranFry\Obex\Obex;
 use OranFry\Tools\ContextVariableSets\Showas;
 
+$baseUrl = implode('', EATENS);
+
 $ledger = Config::load(
     $viewdata,
     defined('LEDGER_CONFIG') ? LEDGER_CONFIG : null,
@@ -307,6 +309,7 @@ $hideTitle = $ledger->hideTitle();
 
 return compact(
     'addable',
+    'baseUrl',
     'base_version',
     'error',
     'fields',

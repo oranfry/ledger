@@ -56,7 +56,7 @@
             headers['X-Differential'] = 'True';
         }
 
-        $.ajax(window.location.pathname + '/ajax/save', {
+        $.ajax(window.ledgerBaseUrl + '/ajax/save', {
             method: 'post',
             contentType: false,
             processData: false,
