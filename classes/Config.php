@@ -76,6 +76,10 @@ class Config
         return '0.00';
     }
 
+    public function save(array $data): array
+    {
+    }
+
     public function showas(): array
     {
         return [

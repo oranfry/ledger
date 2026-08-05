@@ -1,35 +1,14 @@
 <?php
 
-$data = json_decode(file_get_contents('php://input'));
+use OranFry\Ledger\Config;
 
-if (strtolower(getallheaders()['X-Differential'] ?? 'false') === 'true') {
-    $data = array_values(array_filter(array_map(function ($line) use ($jars): ?object {
-        $orig = $jars->get($line->type, $line->id);
+$ledger = Config::load(
+    $viewdata,
+    defined('LEDGER_CONFIG') ? LEDGER_CONFIG : null,
+    @$_GET['version'],
+);
 
-        unset($line->type, $line->id);
-
-        if (!$obvars = get_object_vars($line)) {
-            return null;
-        }
-
-        $changed = false;
-
-        foreach (get_object_vars($line) as $prop => $value) {
-            if ($orig->$prop !== $value) {
-                $orig->$prop = $value;
-                $changed = true;
-            }
-        }
-
-        if (!$changed) {
-            return null;
-        }
-
-        return $orig;
-    }, $data)));
-}
-
-$data = $jars->save($data, @getallheaders()['X-Base-Version']);
+$data = $ledger->save(json_decode(file_get_contents('php://input')));
 
 return [
     'data' => $data,
