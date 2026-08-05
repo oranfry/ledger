@@ -13,4 +13,4 @@ if ($lines === null) {
     return;
 }
 
-ss_require("src/php/partial/showas/ledger/$showas->value.php", $viewdata);
+ss_require("src/php/partial/showas/ledger/$showas.php", $viewdata);

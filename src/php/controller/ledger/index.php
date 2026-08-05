@@ -205,13 +205,21 @@ foreach ($fields as $field) {
 }
 
 $generic = (object) array_map(fn ($values) => count($values) == 1 ? reset($values) : null, $generic_builder);
-$showas = new Showas('ledger_showas');
-$showas->options = $ledger->showas();
 
-ContextVariableSet::put('showas', $showas);
+$showasOptions = $ledger->showas();
+$showas = reset($showasOptions);
 
-if (!$showas->value) {
-    $showas->value = reset($showas->options);
+if (count($showasOptions) > 1) {
+    $showasCvs = new Showas('ledger_showas');
+    $showasCvs->options = $showasOptions;
+
+    if (!$showasCvs->value) {
+        $showasCvs->value = $showas;
+    }
+
+    $showas = $showasCvs->value;
+
+    ContextVariableSet::put('showas', $showasCvs);
 }
 
 $mask_fields = [];
