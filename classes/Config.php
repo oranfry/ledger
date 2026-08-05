@@ -32,6 +32,11 @@ class Config
         return null;
     }
 
+    public function hideTitle(): bool
+    {
+        return false;
+    }
+
     public function lineGrouping(object $line): ?string
     {
         return null;

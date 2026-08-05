@@ -295,6 +295,8 @@ uksort($summaries, function ($a, $b) use ($groupings): int {
         ?: array_search($a, $groupings) <=> array_search($b, $groupings);
 });
 
+$hideTitle = $ledger->hideTitle();
+
 return compact(
     'addable',
     'base_version',
@@ -304,6 +306,7 @@ return compact(
     'graphfields',
     'groupingInfo',
     'groupings',
+    'hideTitle',
     'lines',
     'linetypes',
     'mask_fields',
