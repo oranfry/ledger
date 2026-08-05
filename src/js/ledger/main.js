@@ -345,7 +345,7 @@
 
         var handleSave = function() {
             saveLines(lines, bulk, function(data, textStatus, request) {
-                $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'));
+                window.contextVariableSets.version = request.getResponseHeader('X-Version');
                 cvsApply();
             });
         };
@@ -474,7 +474,7 @@
             }).get();
 
             saveLines(lines, false, function(data, textStatus, request) {
-                $('#new-vars-here').append($('<input name="version" value="' + request.getResponseHeader('X-Version') + '">'))
+                window.contextVariableSets.version = request.getResponseHeader('X-Version');
                 cvsApply();
             });
         }
