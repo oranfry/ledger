@@ -1,5 +1,7 @@
 <?php
 
+use OranFry\Ledger\FieldFilters;
+
 $showValue = function ($field, $value): void {
     if ($callback = $field->transform ?? null) {
         $value = $callback($value);
@@ -39,7 +41,8 @@ foreach ($fields as $field) {
     ?><thead><?php
         ?><tr><?php
             foreach ($fields as $field) {
-                $alias = $field->alias ?? $field->name;
+                $fieldName = explode('|', $field->name, 2)[0];
+                $alias = $field->alias ?? $fieldName;
 
                 ?><th<?php
 
@@ -47,8 +50,8 @@ foreach ($fields as $field) {
                     echo ' class="right"';
                 }
 
-                if ($alias !== $field->name) {
-                    echo ' title="' . $field->name . '"';
+                if ($alias !== $fieldName) {
+                    echo ' title="' . $fieldName . '"';
                 }
 
                 ?>><?php
@@ -88,11 +91,13 @@ foreach ($fields as $field) {
                 if ($hasSummaries) {
                     ?><tr><?php
                         foreach ($fields as $field) {
+                            $fieldName = explode('|', $field->name, 2)[0];
+
                             ?><td<?= $field->type == 'number' ? ' class="right"' : '' ?>><?php
                                 if ($fs = @$field->summary[0]) {
                                     $alias = $fs->alias;
 
-                                    if ($correct = @$verified->{$field->name}) {
+                                    if ($correct = @$verified->$fieldName) {
                                         if (@$summary->{$fs->alias} == $correct) {
                                             $icon = 'tick';
                                             $color = 'green';
@@ -104,8 +109,8 @@ foreach ($fields as $field) {
                                         ?><i<?php
                                         ?> class="icon icon--<?= $color ?> icon--<?= $icon ?>"<?php
 
-                                        if (@$summary->{$field->name} != $correct) {
-                                            $delta = bcsub($correct, $summary->{$field->name} ?? 0, 2);
+                                        if (@$summary->$fieldName != $correct) {
+                                            $delta = bcsub($correct, $summary->$fieldName ?? 0, 2);
                                             ?> title="<?= $correct ?>    [Δ<?= $delta ?>]"<?php
                                         }
 
@@ -197,9 +202,11 @@ foreach ($fields as $field) {
                     ?> data-type="<?= $line->type ?>"<?php
                 ?>><?php
                     foreach ($fields as $field) {
-                        $value = @$field->value ? computed_field_value($line, $field->value) : @$line->{$field->name};
+                        @[$fieldName, $pipeline] = explode('|', $field->name, 2);
 
-                        ?><td data-name="<?= $field->name ?>" data-value="<?= htmlspecialchars($value ?? '') ?>" style="<?= $field->type == 'number' ? 'text-align: right;' : null ?>"><?php
+                        $value = FieldFilters::apply(@$line->$fieldName, $pipeline);
+
+                        ?><td data-name="<?= $fieldName ?>" data-value="<?= htmlspecialchars($value ?? '') ?>" style="<?= $field->type == 'number' ? 'text-align: right;' : null ?>"><?php
                             if ($value && $limit = @$field->width_limit) {
                                 ?><div class="only-sub1200" style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: <?= $field->width_limit ?>;"><?php
                                 $showValue($field, $value);
