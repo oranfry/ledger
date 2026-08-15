@@ -15,4 +15,8 @@ $variant = defined('LEDGER_CONFIG') && LEDGER_CONFIG !== 'default' ? '/' . LEDGE
 
 ss_include('src/php/partial/js/ledger-extra' . $variant . '.php', $viewdata);
 
-echo '<script>softCvsApply();</script>';
+echo '<script>';
+    ?>ledgerOnResize();<?php
+    ?>ledgerRefreshDisplayedLineEditor();<?php
+    ?>softCvsApply();<?php
+echo '</script>';
