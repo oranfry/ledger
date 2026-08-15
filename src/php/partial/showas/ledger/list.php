@@ -235,6 +235,27 @@ foreach ($fields as $field) {
         ?><a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $groupingInfo->defaultGrouping ?? null ?>"><i class="icon icon--gray icon--plus"></i> <i class="icon icon--gray icon--<?= $linetype instanceof \ledger\linetype\Transferin ? 'arrowleftright' : $linetype->icon ?? 'doc' ?>"></i></a><?php
     }
 ?></nav><?php
+
+if ($underTableItems = $ledger->underTableItems($viewdata)) {
+    ?><div class="under-table-items snap-pad"><?php
+        echo implode('&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;', array_map(function ($uti) {
+            $output = '';
+
+            if (@$uti->href) {
+                $output .= "<a href=\"$uti->href\">";
+            }
+
+            $output .= $uti->text;
+
+            if (@$uti->href) {
+                $output .= '</a>';
+            }
+
+            return $output;
+        }, $underTableItems));
+    ?></div><?php
+}
+
 ?><br><br><?php
 
 ?><div id="line-container"></div><?php

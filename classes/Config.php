@@ -95,6 +95,11 @@ class Config
         return 'Ledger';
     }
 
+    public function underTableItems(): array
+    {
+        return [];
+    }
+
     public function variables(): array
     {
         return [];
