@@ -55,6 +55,22 @@
     padding-left: 4em;
 }
 
+@media screen and (max-width: 1199px) {
+    #line-container {
+        padding: 2em;
+    }
+
+    .floatline {
+        display: block;
+        max-width: 960px;
+        margin: 0 auto;
+    }
+
+    .under-table-items {
+        text-align: center;
+    }
+}
+
 @media (prefers-color-scheme: light) {
     #line-container {
         background: #0004;
