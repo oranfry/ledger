@@ -62,6 +62,12 @@ foreach ($fields as $field) {
 
                 ?></th><?php
             }
+
+            if (!$ledger->groupingInfo()) {
+                ?><th class="right"><?php
+                ss_require('src/php/partial/snippets/addable.php', compact('ledger'));
+                ?></th><?php
+            }
         ?></tr><?php
     ?></thead><?php
     ?><tbody><?php
@@ -141,6 +147,10 @@ foreach ($fields as $field) {
                                 }
                             ?></td><?php
                         }
+
+                        if (!$ledger->groupingInfo()) {
+                            ?><td></td><?php
+                        }
                     ?></tr><?php
                 }
             }
@@ -170,23 +180,11 @@ foreach ($fields as $field) {
                             $grouptitle = "<a class=\"incog\" href=\"$grouphref\">$grouptitle</a>";
                         }
 
-                        ?><td colspan="<?= $num_visible_cols ?>" style="line-height: 2em; font-weight: bold"><?php
+                        ?><td colspan="<?= $num_visible_cols - 1 ?>" style="line-height: 2em; font-weight: bold"><?php
                             echo $grouptitle;
-
-                            ?><div style="float: right" class="inline-rel"><?php
-                                if (count($addable) > 1) {
-                                    ?><div class="inline-modal inline-modal--right"><?php
-                                        ?><nav><?php
-                                            foreach ($addable as $linetype) {
-                                                ?><a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $line->_grouping ?>"><i class="icon icon--gray icon--<?= $linetype->icon ?? 'doc' ?>"></i></a><?php
-                                            }
-                                        ?></nav><?php
-                                    ?></div><?php
-                                    ?><a class="inline-modal-trigger"><i class="icon icon--gray icon--plus"></i></a><?php
-                                } elseif (count($addable) == 1) {
-                                    ?><a href="#" class="trigger-add-line" data-type="<?= $addable[0]->name ?>" data-date="<?= $line->_grouping ?>"><i class="icon icon--gray icon--plus"></i></a><?php
-                                }
-                            ?></div><?php
+                        ?></td><?php
+                        ?><td class="right"><?php
+                            ss_require('src/php/partial/snippets/addable.php', compact('ledger'));
                         ?></td><?php
                     ?></tr><?php
                 }
@@ -221,6 +219,10 @@ foreach ($fields as $field) {
                             }
                         ?></td><?php
                     }
+
+                    if (!$ledger->groupingInfo()) {
+                        ?><td></td><?php
+                    }
                 ?></tr><?php
             }
 
@@ -229,12 +231,6 @@ foreach ($fields as $field) {
         }
     ?></tbody><?php
 ?></table><?php
-
-?><nav><?php
-    foreach ($addable as $linetype) {
-        ?><a href="#" class="trigger-add-line" data-type="<?= $linetype->name ?>" data-date="<?= $groupingInfo->defaultGrouping ?? null ?>"><i class="icon icon--gray icon--plus"></i> <i class="icon icon--gray icon--<?= $linetype instanceof \ledger\linetype\Transferin ? 'arrowleftright' : $linetype->icon ?? 'doc' ?>"></i></a><?php
-    }
-?></nav><?php
 
 if ($underTableItems = $ledger->underTableItems($viewdata)) {
     ?><div class="under-table-items snap-pad"><?php
