@@ -3,6 +3,22 @@
     var $lineContainer = $('#line-container');
     var lineContainerBg = null;
 
+    let alertException = function (data) {
+        if (data.responseJSON.error) {
+            alert(data.responseJSON.error);
+        }
+
+        let exception = data.responseJSON.exception ?? 'Unknown Exception';
+        let message = data.responseJSON.message ?? 'No message was given';
+
+        if (typeof data.responseJSON.private_message !== 'undefined') {
+            exception = data.responseJSON.private_exception;
+            message = data.responseJSON.private_message;
+        }
+
+        alert(exception + '\n\n' + message);
+    };
+
     var clearInputs = function() {
         $(this).find('input[type="file"]').each(function(){
             var $controls = $(this).closest('.file-field-controls');
@@ -508,11 +524,49 @@
         }
     }
 
+    let rawlineSave = function(e) {
+        e.preventDefault();
+        var data;
+
+        try {
+            data = JSON.parse($(this).closest('form').find('[name="raw"]').val());
+        } catch(e) {
+            alert(e);
+
+            return;
+        }
+
+        if (data.constructor !== Array) {
+            if (typeof data === 'object') {
+                data = [data];
+            } else {
+                alert('Please provide an object or array of objects');
+
+                return;
+            }
+        }
+
+        $.ajax(window.ledgerBaseUrl + '/ajax/save', {
+            method: 'post',
+            contentType: false,
+            processData: false,
+            data: JSON.stringify(data),
+            headers: {'X-Base-Version': base_version},
+            success: function(data, textStatus, request) {
+                window.contextVariableSets.version = request.getResponseHeader('X-Version');
+                window.contextVariableSets.raw__value = 0;
+                cvsApply();
+            },
+            error: alertException
+        });
+    };
+
     var resizeTimer = null;
 
     $(window).on('resize', function(){ clearTimeout(resizeTimer); resizeTimer = setTimeout(onResize, 300); });
 
     onResize();
+    $('.savelineraw').on('click', rawlineSave);
 
     window.ledger_map_line = function (line) { return line; }
     window.ledger_unmap_line = function (line) { return line; }
