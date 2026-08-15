@@ -2,8 +2,8 @@
 
 ?><br><?php
 
-if (!$hideTitle) {
-    ?><h3><?= $title ?></h3><?php
+if (!$ledger->hideTitle()) {
+    ?><h3><?= $ledger->title() ?></h3><?php
     ?><br><?php
 }
 

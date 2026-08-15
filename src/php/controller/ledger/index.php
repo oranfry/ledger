@@ -224,11 +224,7 @@ if (count($showasOptions) > 1) {
     ContextVariableSet::put('showas', $showasCvs);
 }
 
-$mask_fields = [];
-$addable = $linetypes = $ledger->linetypes();
-
 $error = $lines === null ? $ledger->error() : null;
-$title = $ledger->title();
 
 if ($verified_data = $ledger->verifiedData()) {
     foreach (array_diff(array_keys($verified_data), ['initial']) as $grouping) {
@@ -305,26 +301,17 @@ uksort($summaries, function ($a, $b) use ($groupings): int {
         ?: array_search($a, $groupings) <=> array_search($b, $groupings);
 });
 
-$hideTitle = $ledger->hideTitle();
-
 return compact(
-    'addable',
-    'baseUrl',
     'base_version',
+    'baseUrl',
     'error',
     'fields',
     'generic',
     'graphfields',
-    'groupingInfo',
     'groupings',
-    'hideTitle',
+    'ledger',
     'lines',
-    'linetypes',
-    'mask_fields',
-    'opening',
     'showas',
     'summaries',
-    'title',
-    'variables',
     'verified_data',
 );

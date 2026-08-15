@@ -2,7 +2,7 @@
 
 use OranFry\ContextVariableSets\ContextVariableSet;
 
-if (!$groupingInfo) {
+if (!$ledger->groupingInfo()) {
     echo "Can't show a summaries - no grouping info";
     return;
 }
@@ -12,9 +12,9 @@ if (!@$summaries) {
     return;
 }
 
-$seen_today = !$groupingInfo
-    || !@$groupingInfo->currentGrouping
-    || !in_array($groupingInfo->currentGrouping, $groupings);
+$seen_today = !$ledger->groupingInfo()
+    || !@$ledger->groupingInfo()->currentGrouping
+    || !in_array($ledger->groupingInfo()->currentGrouping, $groupings);
 
 ?><table class="easy-table"><?php
     ?><thead><?php
@@ -34,8 +34,8 @@ $seen_today = !$groupingInfo
             $summary = $summaries[$grouping];
 
             $is_current = !$seen_today
-                && $groupingInfo->currentGrouping
-                && strcmp($groupingInfo->currentGrouping, $summaryKeys[$i + 1] ?? '') < 0;
+                && $ledger->groupingInfo()->currentGrouping
+                && strcmp($ledger->groupingInfo()->currentGrouping, $summaryKeys[$i + 1] ?? '') < 0;
 
             $seen_today = $seen_today || $is_current;
 

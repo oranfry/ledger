@@ -24,9 +24,9 @@ $lastgroup = 'initial';
 
 $num_visible_cols = count($fields);
 
-$seen_today = !$groupingInfo
-    || !@$groupingInfo->currentGrouping
-    || !in_array($groupingInfo->currentGrouping, $groupings);
+$seen_today = !$ledger->groupingInfo()
+    || !@$ledger->groupingInfo()->currentGrouping
+    || !in_array($ledger->groupingInfo()->currentGrouping, $groupings);
 
 $hasSummaries = false;
 
@@ -75,9 +75,9 @@ foreach ($fields as $field) {
             unset($line);
 
             if ($i == count($lines)) {
-                if ($groupingInfo) {
+                if ($ledger->groupingInfo()) {
                     $line = (object) [
-                        '_grouping' => $seen_today ? null : $groupingInfo->currentGrouping,
+                        '_grouping' => $seen_today ? null : $ledger->groupingInfo()->currentGrouping,
                     ];
                 }
 
@@ -156,12 +156,12 @@ foreach ($fields as $field) {
             }
 
             if (
-                $groupingInfo &&
-                ($i == count($lines) || $line->_grouping != $lastgroup)
+                $ledger->groupingInfo()
+                && ($i == count($lines) || $line->_grouping != $lastgroup)
             ) {
-                if (!$seen_today && strcmp($groupingInfo->currentGrouping, $line->_grouping) < 0) {
+                if (!$seen_today && strcmp($ledger->groupingInfo()->currentGrouping, $line->_grouping) < 0) {
                     unset($line);
-                    $line = (object) ['_grouping' => $groupingInfo->currentGrouping];
+                    $line = (object) ['_grouping' => $ledger->groupingInfo()->currentGrouping];
                     $i--;
                     $skip = true;
                 }
@@ -172,11 +172,11 @@ foreach ($fields as $field) {
                 }
 
                 if (@$line->_grouping) {
-                    ?><tr class="<?= strcmp($line->_grouping, $groupingInfo->currentGrouping ?? '') ? '' : 'today' ?>"><?php
+                    ?><tr class="<?= strcmp($line->_grouping, $ledger->groupingInfo()->currentGrouping ?? '') ? '' : 'today' ?>"><?php
                         $grouptitle = $line->_grouping;
 
-                        if (@$groupingInfo->daylink) {
-                            $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($groupingInfo->daylink)($line->_grouping) . '&back=' . base64_encode($_SERVER['REQUEST_URI']);
+                        if (@$ledger->groupingInfo()->daylink) {
+                            $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($ledger->groupingInfo()->daylink)($line->_grouping) . '&back=' . base64_encode($_SERVER['REQUEST_URI']);
                             $grouptitle = "<a class=\"incog\" href=\"$grouphref\">$grouptitle</a>";
                         }
 
@@ -202,7 +202,7 @@ foreach ($fields as $field) {
                     foreach ($fields as $field) {
                         @[$fieldName, $pipeline] = explode('|', $field->name, 2);
 
-                        $value = FieldFilters::apply(@$line->$fieldName, $pipeline);
+                        $value = FieldFilters::apply(@$line->$fieldName, $pipeline . ($pipeline ? '|' : null) . 'start(50)');
 
                         ?><td data-name="<?= $fieldName ?>" data-value="<?= htmlspecialchars($value ?? '') ?>" style="<?= $field->type == 'number' ? 'text-align: right;' : null ?>"><?php
                             if ($value && $limit = @$field->width_limit) {
@@ -227,7 +227,7 @@ foreach ($fields as $field) {
             }
 
             $lastgroup = @$line->_grouping;
-            $seen_today = $seen_today || ($lastgroup ?? '') == $groupingInfo->currentGrouping;
+            $seen_today = $seen_today || ($lastgroup ?? '') == $ledger->groupingInfo()->currentGrouping;
         }
     ?></tbody><?php
 ?></table><?php

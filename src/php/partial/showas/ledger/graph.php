@@ -1,6 +1,6 @@
 <?php
 
-if (!$groupingInfo) {
+if (!$ledger->groupingInfo()) {
     echo "Can't show a graph - no grouping info";
     return;
 }
@@ -20,12 +20,12 @@ if (!$groupings) {
     return;
 }
 
-$trueScale = $groupingInfo->trueScale ?? true;
-$style = $groupingInfo->graphStyle ?? 'line';
+$trueScale = $ledger->groupingInfo()->trueScale ?? true;
+$style = $ledger->groupingInfo()->graphStyle ?? 'line';
 
-foreach ($groupingInfo->divs ?? $groupings as $key => $div) {
+foreach ($ledger->groupingInfo()->divs ?? $groupings as $key => $div) {
     if (is_string($div)) {
-        $groupingInfo->divs[$key] = (object) [
+        $ledger->groupingInfo()->divs[$key] = (object) [
             'grouping' => $div,
         ];
     }
@@ -96,7 +96,7 @@ foreach ($scales as $unit => $scale) {
         $min = $minFieldMin;
     }
 
-    if ($nearest = $maxFieldNearest ?? $groupingInfo->nearest ?? null) {
+    if ($nearest = $maxFieldNearest ?? $ledger->groupingInfo()->nearest ?? null) {
         $max = ceil($max / $nearest) * $nearest;
         $min = floor($min / $nearest) * $nearest;
     }
@@ -219,7 +219,7 @@ foreach ($scales as $scaleKey => $scale) {
 $divs = [];
 
 foreach ($groupings as $groupingNum => $grouping) {
-    $div = array_values(array_filter($groupingInfo->divs ?? [], fn ($div) => $div->grouping === $grouping))[0] ?? null;
+    $div = array_values(array_filter($ledger->groupingInfo()->divs ?? [], fn ($div) => $div->grouping === $grouping))[0] ?? null;
 
     if ($div) {
         $numer = $groupingNum + $offset;
@@ -233,7 +233,7 @@ foreach ($groupings as $groupingNum => $grouping) {
         );
     }
 
-    if ($grouping === ($groupingInfo->currentGrouping ?? null)) {
+    if ($grouping === ($ledger->groupingInfo()->currentGrouping ?? null)) {
         $graphtoday = [
             ($groupingNum + $offset) / ($numGroupings + $offset - 1),
             ($groupingNum + $offset + 1) / ($numGroupings + $offset - 1),
