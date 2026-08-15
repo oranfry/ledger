@@ -3,11 +3,13 @@
 use OranFry\ContextVariableSets\ContextVariableSet;
 
 foreach ($ledger->variables() as $var) {
-    if (!$var->invisible()) {
-        ?><h4 style="margin-bottom: 0.5em;"><?= $var->prefix ?></h4><?php
-    }
+    ?><div id="cvs-<?= $var->prefix ?>"><?php
+        if (!$var->invisible()) {
+            ?><h4 style="margin: 0.75em 0 0.2em"><?= $var->prefix ?></h4><?php
+        }
 
-    $var->display();
+        $var->display();
+    ?></div><?php
 }
 
 if ($showasCvs = ContextVariableSet::get('showas')) {
