@@ -1,10 +1,9 @@
 <?php
 
-?><br><?php
-
 if (!$ledger->hideTitle()) {
-    ?><h3><?= $ledger->title() ?></h3><?php
-    ?><br><?php
+    ?><div class="snap-pad"><?php
+        ?><h3 class="ledger-title easy-table-title"><?= $ledger->title() ?></h3><?php
+    ?></div><?php
 }
 
 if ($lines === null) {

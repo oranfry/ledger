@@ -522,9 +522,10 @@
 
         if ($('.easy-table').length) {
             let wide = $(window).width() >= 1200;
-            let margin = 30;
-            let top = wide && $('.easy-table').offset().top || margin;
-            let left = wide && ($('.easy-table').offset().left + $('.easy-table').outerWidth() + margin) || 0;
+            let verticalMargin = 43;
+            let horizontalMargin = 20;
+            let top = wide && $('.easy-table').offset().top || verticalMargin;
+            let left = wide && ($('.easy-table').offset().left + $('.easy-table').outerWidth() + horizontalMargin) || 0;
             let height = $(window).height();
             let width = $(window).width() - left;
             let background = !wide && lineContainerBg || 'none';
@@ -535,7 +536,7 @@
                 left: left,
                 width: width + 'px',
                 height: height + 'px',
-                'padding-bottom': margin + 'px',
+                'padding-bottom': verticalMargin + 'px',
                 'padding-top': top + 'px',
                 'pointer-events': wide && 'none' || '',
                 background: background

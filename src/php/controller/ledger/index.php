@@ -212,7 +212,7 @@ $showasOptions = $ledger->showas();
 $showas = reset($showasOptions);
 
 if (count($showasOptions) > 1) {
-    $showasCvs = new Showas('ledger_showas');
+    $showasCvs = new Showas('showas');
     $showasCvs->options = $showasOptions;
 
     if (!$showasCvs->value) {

@@ -55,6 +55,12 @@
     padding-left: 4em;
 }
 
+.ledger-title {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    width: fit-content;
+}
+
 @media screen and (max-width: 1199px) {
     #line-container {
         padding: 2em;
@@ -88,5 +94,17 @@
 
     .line, #sums {
         background-color: #333;
+    }
+}
+
+@media screen and (min-width: 1199px) and (prefers-color-scheme: light) {
+    .line, #sums {
+        border: 1px solid #ddd;
+    }
+}
+
+@media screen and (min-width: 1199px) and (prefers-color-scheme: dark) {
+    .line, #sums {
+        border: 1px solid #555;
     }
 }
