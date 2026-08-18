@@ -7,8 +7,11 @@ use OranFry\Subsimple\Config as SubsimpleConfig;
 
 class Config
 {
+    protected ?int $version = null;
+
     public function __construct(array $viewdata, ?int $version = null)
     {
+        $this->version = $version;
     }
 
     public function error(): ?string
