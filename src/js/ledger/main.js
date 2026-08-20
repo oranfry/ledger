@@ -69,19 +69,11 @@
     };
 
     var saveLines = function(lines, differential, success) {
-        let headers = {};
-
-        if (typeof window.ledgerSaveHeaders !== 'undefined') {
-            $.each(window.ledgerSaveHeaders, function () {
-                headers = {...this(differential), ...headers};
-            });
-        }
-
         $.ajax(window.ledgerBaseUrl + '/ajax/save', {
             method: 'post',
             contentType: false,
             processData: false,
-            headers: headers,
+            headers: prepareSaveHeaders(differential),
             data: JSON.stringify(lines),
             success: success,
             error: alertException
@@ -570,7 +562,7 @@
             contentType: false,
             processData: false,
             data: JSON.stringify(data),
-            headers: {'X-Base-Version': base_version},
+            headers: prepareSaveHeaders(false),
             success: function(data, textStatus, request) {
                 window.contextVariableSets.version = request.getResponseHeader('X-Version');
                 window.contextVariableSets.raw__value = 0;
@@ -579,6 +571,18 @@
             error: alertException
         });
     };
+
+    window.prepareSaveHeaders = function (differential) {
+        let headers = {};
+
+        if (typeof window.ledgerSaveHeaders !== 'undefined') {
+            $.each(window.ledgerSaveHeaders, function () {
+                headers = {...this(differential), ...headers};
+            });
+        }
+
+        return headers;
+    }
 
     window.injectJarsHeaders = function (differential) {
         let headers = {
