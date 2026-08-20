@@ -77,6 +77,12 @@
             headers['X-Differential'] = 'True';
         }
 
+        if (typeof window.ledgerSaveHeaders !== 'undefined') {
+            $.each(window.ledgerSaveHeaders, function () {
+                headers = {...this(differential), ...headers};
+            });
+        }
+
         $.ajax(window.ledgerBaseUrl + '/ajax/save', {
             method: 'post',
             contentType: false,
@@ -578,6 +584,14 @@
             },
             error: alertException
         });
+    };
+
+    window.injectJarsHeaders = function (differential) {
+        let headers = {
+            'X-Base-Version': base_version,
+        };
+
+        return headers;
     };
 
     var resizeTimer = null;

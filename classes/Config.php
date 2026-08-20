@@ -37,6 +37,10 @@ class Config
         return false;
     }
 
+    public function js(): void
+    {
+    }
+
     public function lineGrouping(object $line): ?string
     {
         return null;

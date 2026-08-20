@@ -8,6 +8,8 @@ echo '<script>';
     ?>window.lines = <?= json_encode($lines) ?>;<?php
     ?>window.ledgerBaseUrl = '<?= $baseUrl ?>';<?php
     ?>window.toolsPluginMountPoint = '<?= TOOLS_PLUGIN_MOUNT_POINT ?>';<?php
+
+    $ledger->js();
 echo '</script>';
 
 $variant = defined('LEDGER_CONFIG') && LEDGER_CONFIG !== 'default' ? '/' . LEDGER_CONFIG : null;
