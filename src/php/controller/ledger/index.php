@@ -10,7 +10,6 @@ $baseUrl = implode('', EATENS);
 $ledger = Config::load(
     $viewdata,
     defined('LEDGER_CONFIG') ? LEDGER_CONFIG : null,
-    @$_GET['version'],
 );
 
 foreach (($variables = $ledger->variables()) as $variable) {

@@ -7,11 +7,8 @@ use OranFry\Subsimple\Config as SubsimpleConfig;
 
 class Config
 {
-    protected ?int $version = null;
-
-    public function __construct(array $viewdata, ?int $version = null)
+    public function __construct(array $viewdata)
     {
-        $this->version = $version;
     }
 
     public function error(): ?string
@@ -55,7 +52,7 @@ class Config
         return [];
     }
 
-    public static function load(array $viewdata, ?string $config_name = null, ?int $version = null)
+    public static function load(array $viewdata, ?string $config_name = null)
     {
         $configs = SubsimpleConfig::get()->ledger;
 
@@ -71,7 +68,7 @@ class Config
             throw new Exception("No class specified for ledger config '$config_name'");
         }
 
-        return new $config_class($viewdata, $version);
+        return new $config_class($viewdata);
     }
 
     public function opening(): string
