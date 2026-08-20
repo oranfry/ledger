@@ -1,0 +1,7 @@
+[
+    "src/js/ledger/fieldtypes/fieldtypes.js",
+    "src/js/ledger/fieldtypes/bool.js",
+    "src/js/ledger/fieldtypes/date.js",
+    "src/js/ledger/fieldtypes/number.js",
+    "src/js/ledger/fieldtypes/string.js"
+]

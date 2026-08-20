@@ -1,4 +1,5 @@
 [
     "src/js/ledger/main.js",
-    "src/js/ledger/graph.js"
+    "src/js/ledger/graph.js",
+    "include:src/js/ledger/fieldtypes.json"
 ]
