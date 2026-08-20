@@ -71,10 +71,6 @@
     var saveLines = function(lines, differential, success) {
         let headers = {};
 
-        if (differential) {
-            headers['X-Differential'] = 'True';
-        }
-
         if (typeof window.ledgerSaveHeaders !== 'undefined') {
             $.each(window.ledgerSaveHeaders, function () {
                 headers = {...this(differential), ...headers};
@@ -588,6 +584,10 @@
         let headers = {
             'X-Base-Version': base_version,
         };
+
+        if (differential) {
+            headers['X-Differential'] = 'True';
+        }
 
         return headers;
     };
