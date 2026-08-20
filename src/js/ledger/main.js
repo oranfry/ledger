@@ -57,7 +57,7 @@
             if (line.type == linetype && line.id == id) {
                 if (typeof window.ledgerMapLine !== 'undefined') {
                     $.each(window.ledgerMapLine, function () {
-                        this(line);
+                        line = this(line);
                     });
                 }
 
