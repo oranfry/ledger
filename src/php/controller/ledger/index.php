@@ -96,7 +96,7 @@ foreach ($fields as $field) {
 }
 
 $groupingInfo = $ledger->groupingInfo();
-$lines = $ledger->lines($base_version);
+$lines = $ledger->lines();
 
 $groupings = $groupingInfo->groupings ?? [];
 
@@ -301,7 +301,6 @@ uksort($summaries, function ($a, $b) use ($groupings): int {
 });
 
 return compact(
-    'base_version',
     'baseUrl',
     'error',
     'fields',

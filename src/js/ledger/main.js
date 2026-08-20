@@ -71,7 +71,6 @@
     var saveLines = function(lines, differential, success) {
         let headers = {
             'X-Auth': getCookie('token'),
-            'X-Base-Version': base_version,
         };
 
         if (differential) {

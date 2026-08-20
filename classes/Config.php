@@ -42,7 +42,7 @@ class Config
         return null;
     }
 
-    public function lines(?int &$base_version = null): ?array
+    public function lines(): ?array
     {
         return null;
     }
