@@ -1,7 +1,7 @@
 (function() {
     window.fieldtypes.types.string = {
         create: function(spec) {
-            let $field;
+            let $wrapper, $field;
 
             if (typeof spec.options !== 'undefined') {
                 $field = $('<select>')
@@ -63,9 +63,21 @@
                 }
             }
 
-            return $field;
+            if (spec.downloadable) {
+                let $downloadMe = $('<a download>⬇</a>')
+                    .data('table', spec.download_table)
+                    .addClass('button noedit-invisible');
+
+                $wrapper = $('<span style="white-space: nowrap">')
+                    .append($field, $downloadMe);
+            }
+
+            return $wrapper || $field;
         },
         set: function ($field, value) {
+            let $downloadMe = $field.find('a[download]');
+            console.log($downloadMe);
+
             if (!$field.is('select, input, textarea')) {
                 $field = $field.find('select, input, textarea').first();
             }
@@ -75,6 +87,12 @@
             }
 
             $field.val(value);
+
+            if ($downloadMe.length) {
+                $downloadMe
+                    .attr('href', window.ledgerBaseUrl + '/-download/' + $downloadMe.data('table') + '/' + value)
+                    .toggle(!!value);
+            }
         },
         get: function ($field) {
             if (!$field.is('select, input, textarea')) {
