@@ -1,18 +1,23 @@
 (function() {
-    window.fieldtypes.types.string = {
-        create: function(spec) {
-            let $wrapper, $field;
+    window.fieldtypes.types.string = class {
+        constructor(spec) {
+            this.spec = spec;
+            this._buttons = [];
+            this.downloadButton = null;
+            this.adhocButton = null;
+
+            let that = this;
 
             if (typeof spec.options !== 'undefined') {
-                $field = $('<select>')
+                this.$field = $('<select>')
                     .attr('name', spec.name);
 
                 if (spec.readonly) {
-                    $field.prop('disabled', true);
+                    this.$field.prop('disabled', true);
                 }
 
                 if (spec.constrained || spec.options.length > 1) {
-                    $field.append($('<option>'));
+                    this.$field.append($('<option>'));
                 }
 
                 $.each(spec.options, function () {
@@ -20,86 +25,97 @@
                         .attr('value', this)
                         .html(this);
 
-                    $field.append($option);
+                    that.$field.append($option);
                 });
 
-                if (!spec.constrained) {
-                    let $adhoc = $('<span class="button adhoc-toggle noedit-invisible">&hellip;</span>')
-                        .on('click', function(e) {
-                            e.preventDefault();
-
+                if (!this.spec.constrained) {
+                    this.adhocButton = {
+                        content: $(document.createTextNode('⚙')),
+                        action: function() {
                             let adhocvalue = prompt("New value");
 
                             if (adhocvalue) {
-                                let $option = $('<option>' + adhocvalue + '</option>');
+                                let $option = $('<option>' + adhocvalue + '</option>')
+                                    .val(adhocvalue);
 
-                                $option.insertBefore($field.children().first());
-                                $field.val(adhocvalue);
-                                $field.change();
+                                $option.insertBefore(that.$field.children().first());
+
+                                that.$field
+                                    .val(adhocvalue)
+                                    .change();
                             }
-                        });
-                    
-                    let $wrapper = $('<span style="white-space: nowrap">');
+                        }
+                    };
 
-                    $wrapper.append($field, $adhoc);
-
-                    return $wrapper;
+                    this._buttons.push(this.adhocButton);
                 }
             } else {
-                let multiline = !!spec.multiline;
-
-                $field = multiline ? $('<textarea style="height: 10em">') : $('<input>');
-
-                $field.attr('name', spec.name);
-
-                if (!multiline) {
-                    $field
+                if (spec.multiline) {
+                    this.$field = $('<textarea style="height: 10em">')
                         .attr('type', 'text')
                         .attr('autocomplete', 'off');
+                } else {
+                    this.$field = $('<input>');
                 }
 
+                this.$field.attr('name', spec.name);
+
                 if (spec.readonly) {
-                    $field.prop('disabled', true);
+                    this.$field.prop('disabled', true);
                 }
             }
 
             if (spec.downloadable) {
-                let $downloadMe = $('<a download>⬇</a>')
-                    .data('table', spec.download_table)
-                    .addClass('button noedit-invisible');
+                this.downloadButton = {
+                    content: $(
+                        spec.download_icon
+                            ? '<i class="icon icon--gray icon--' + spec.download_icon + '">'
+                            : document.createTextNode('⬇')
+                    ),
+                    action: function () {
+                        let value = that.$field.val();
+                        let $line = that.$field.closest('.line');
+                        let linetype = $line.data('type');
+                        let id = $line.find('[name="id"]').val();
 
-                $wrapper = $('<span style="white-space: nowrap">')
-                    .append($field, $downloadMe);
+                        if (!id.includes(',')) {
+                            const link = document.createElement('a');
+
+                            link.href = window.ledgerBaseUrl + '/-download/' + linetype + '/' + id + '/' + that.spec.name;
+                            link.toggleAttribute('download', true);
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        }
+                    }
+                };
+
+                this._buttons.push(this.downloadButton);
+            }
+        }
+
+        buttons() {
+            return this._buttons;
+        }
+
+        field() {
+            return this.$field;
+        }
+
+        get () {
+            return this.$field.val();
+        }
+
+        set(value) {
+            if (
+                this.$field.is('select')
+                && !this.$field.find('option[value="' + value + '"]').length
+            ) {
+                this.$field.prepend($('<option>').html(value).prop('value', value));
             }
 
-            return $wrapper || $field;
-        },
-        set: function ($field, value) {
-            let $downloadMe = $field.find('a[download]');
-            console.log($downloadMe);
-
-            if (!$field.is('select, input, textarea')) {
-                $field = $field.find('select, input, textarea').first();
-            }
-
-            if ($field.is('select') && !$field.find('option[value="' + value + '"]').length) {
-                $field.prepend($('<option>').html(value).prop('value', value));
-            }
-
-            $field.val(value);
-
-            if ($downloadMe.length) {
-                $downloadMe
-                    .attr('href', window.ledgerBaseUrl + '/-download/' + $downloadMe.data('table') + '/' + value)
-                    .toggle(!!value);
-            }
-        },
-        get: function ($field) {
-            if (!$field.is('select, input, textarea')) {
-                $field = $field.find('select, input, textarea').first();
-            }
-
-            return $field.val();
+            this.$field.val(value);
         }
     };
 })();

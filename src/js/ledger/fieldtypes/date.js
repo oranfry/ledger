@@ -1,30 +1,45 @@
 (function() {
-    window.fieldtypes.types.date = {
-        create: function(spec) {
-            let $wrapper = $('<span style="white-space: nowrap">');
+    window.fieldtypes.types.date = class {
+        constructor(spec) {
+            let that = this;
 
-            let $field = $('<input class="field value" type="text" style="width: 8em">')
+            this.$field = $('<input class="field value" type="text" style="width: 8em">')
                 .attr('name', spec.name);
 
             if (spec.readonly) {
-                $field.prop('disabled', true);
+                this.$field.prop('disabled', true);
             }
 
-            let $fromToday = $('<span class="button noedit-invisible">&bull;</span>').on('click', function (e) {
-                e.preventDefault();
-                let today = new Date();
+            this._buttons = [{
+                content: $(document.createTextNode('●')),
+                action: function () {
+                    let today = new Date();
 
-                $field.val(today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0'));
-            });
+                    that.$field.val(
+                        today.getFullYear()
+                        + '-'
+                        + String(today.getMonth() + 1).padStart(2, '0')
+                        + '-'
+                        + String(today.getDate()).padStart(2, '0')
+                    );
+                }
+            }];
+        }
 
-            $wrapper.append($field, $fromToday);
-            return $wrapper;
-        },
-        set: function ($field, value) {
-            $field.find('input').val(value);
-        },
-        get: function ($field) {
-            return $field.find('input').val();
+        buttons() {
+            return this._buttons;
+        }   
+
+        field() {
+            return this.$field;
+        }
+
+        get () {
+            return $field.val();
+        }
+
+        set(value) {
+            this.$field.val(value);
         }
     };
 })();

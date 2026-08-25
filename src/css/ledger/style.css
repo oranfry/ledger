@@ -51,14 +51,14 @@
     cursor: pointer;
 }
 
-.line.bulk .form-row .form-row__value {
-    padding-left: 4em;
-}
-
 .ledger-title {
     margin-top: 1em;
     margin-bottom: 1em;
     width: fit-content;
+}
+
+.line:not(.bulk) .form-row__includeme {
+    display: none;
 }
 
 @media screen and (max-width: 1199px) {

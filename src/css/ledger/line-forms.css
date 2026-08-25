@@ -1,0 +1,20 @@
+.form-row > * {
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+    vertical-align: top;
+    box-sizing: border-box;
+}
+
+.form-row .form-row__label {
+    padding-right: 0.5em;
+    text-align: right;
+}
+
+.form-row .form-row__value {
+    padding-left: 0.5em;
+}
+
+.form-row .form-row__includeme input {
+    margin-bottom: -5px;
+    cursor: pointer;
+}

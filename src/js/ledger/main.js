@@ -128,12 +128,17 @@
     };
 
     var createLine = function (linetype) {
-        let $form, $line = $('<div class="line floatline edit-form"></div>')
+        let $form = $('<form method="post">');
+        let $table = $('<table>');
+
+        $form.append($table);
+
+        let $line = $('<div class="line floatline edit-form"></div>')
             .data('type', linetype.name)
             .append($('<div class="lineclose"><i class="icon icon--times icon--gray"></i></div>'))
             .append($('<a class="delete-selected" href="#" style="display: none"><i class="icon icon--gray icon--bin"></i></a>'))
-            .append($('<h3>').html(String(linetype.name).charAt(0).toUpperCase() + String(linetype.name).slice(1)))
-            .append($form = $('<form method="post">'));
+            .append($('<h3>').html(linetype.name))
+            .append($form);
 
         $line.find('.delete-selected').on('click', deleteClicked);
 
@@ -141,36 +146,50 @@
         $line.find('.lineclose').on('mouseup touchstart', function (e) { e.stopPropagation(); e.preventDefault(); deselectAllLines(); });
 
         $.each(linetype.fields, function () {
-            let $label = $('<div class="form-row__label">')
+            let $labelCol = $('<td class="form-row__label">')
                 .html(this.label || this.name);
 
             let $field = window.fieldtypes.create(this);
+            let $includemeCol = $('<td class="form-row__includeme">');
 
-            let $includeme, $value = $('<div class="form-row__value">')
-                .append($includeme = $('<input class="includeme" type="checkbox">').data('for', this.name));
+            let $includeme = $('<input class="includeme" type="checkbox">')
+                .data('for', this.name)
+                .appendTo($includemeCol);
+
+            let $valueCol = $('<td class="form-row__value">');
 
             if (this.readonly) {
                 $includeme.prop('disabled', true).prop('checked', false);
-                $value.addClass('noedit');
+                $valueCol.addClass('noedit');
             }
 
-            $value.append($field);
+            $valueCol.append($field.field());
 
-            let $row = $('<div class="form-row">')
+            if (typeof $field.buttons === 'function') {
+                $.each($field.buttons(), function() {
+                    let $button = $('<span class="button">')
+                        .append(this.content)
+                        .on('click', this.action);
+
+                    $valueCol.append($button);
+                });
+            }
+
+            let $row = $('<tr class="form-row">')
                 .attr('data-field-name', this.name)
                 .data('type', this.type)
                 .data('field', $field)
-                .append($label, $value, $('<div style="clear: both">'));
+                .append($labelCol, $includemeCol, $valueCol);
 
-            $form.append($row);
+            $table.append($row);
         });
 
         let $saveRow = $(
-            '<div class="form-row line-buttons">' +
-                '<div class="form-row__label">&nbsp;</div>' +
-                '<div class="form-row__value"></div>' +
-                '<div style="clear: both"></div>'+
-            '</div>'
+            '<tr class="form-row">' +
+                '<td class="form-row__label">&nbsp;</td>' +
+                '<td class="form-row__includeme"></td>' +
+                '<td class="form-row__value"></td>' +
+            '</tr>'
         );
 
         let $saveButton = $('<button class="saveline button button--main" type="button">Save</button>')
@@ -180,7 +199,7 @@
             .find('.form-row__value')
             .append($saveButton);
 
-        $form.append($saveRow);
+        $table.append($saveRow);
 
         return $line;
     };
@@ -266,7 +285,6 @@
 
                     if (generic_builder[this.name].length == 1 && (value = generic_builder[this.name][0]) || !bulk) {
                         let $row = $line.find('[data-field-name="' + this.name + '"]');
-                        let $field = $row.data('field');
 
                         $row.find('.includeme').prop('checked', !this.readonly);
 
@@ -274,7 +292,7 @@
                             $row.find('.includeme').hide();
                         }
 
-                        window.fieldtypes.types[this.type].set($field, value);
+                        $row.data('field').set(value);
                     }
                 });
             }
@@ -330,11 +348,9 @@
                 return;
             }
 
-            let $field = $row.data('field');
             let name = $row.attr('data-field-name');
-            let type = $row.data('type');
 
-            lineTemplate[name] = window.fieldtypes.types[type].get($field);
+            lineTemplate[name] = $row.data('field').get();
         });
 
         if (typeof lineTemplate.id === 'undefined') {
@@ -462,9 +478,7 @@
             $row.find('.includeme').prop('checked', !this.readonly);
 
             if (value) {
-                let $field = $row.data('field');
-
-                window.fieldtypes.types[this.type].set($field, value);
+                $row.data('field').set(value);
             }
         });
 

@@ -2,6 +2,7 @@
     "src/js/ledger/fieldtypes/fieldtypes.js",
     "src/js/ledger/fieldtypes/bool.js",
     "src/js/ledger/fieldtypes/date.js",
-    "src/js/ledger/fieldtypes/number.js",
+    "src/js/ledger/fieldtypes/float.js",
+    "src/js/ledger/fieldtypes/int.js",
     "src/js/ledger/fieldtypes/string.js"
 ]

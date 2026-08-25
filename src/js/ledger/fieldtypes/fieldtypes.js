@@ -6,9 +6,10 @@
 
             if (!window.fieldtypes.types[spec.type]) {
                 console.error('Unrecognized type: ' + spec.type);
+                return;
             }
 
-            return window.fieldtypes.types[spec.type].create(_spec);
+            return new window.fieldtypes.types[spec.type](_spec);
         },
         types: {}
     };

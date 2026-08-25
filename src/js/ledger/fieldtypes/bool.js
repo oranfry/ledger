@@ -1,20 +1,24 @@
 (function() {
-    window.fieldtypes.types.bool = {
-        create: function(spec) {
-            let $field = $('<input type="checkbox" class="field value">')
+    window.fieldtypes.types.bool = class {
+        constructor(spec) {
+            this.$field = $('<input type="checkbox" class="field value">')
                 .attr('name', spec.name);
 
             if (spec.readonly) {
-                $field.prop('disabled', true);
+                this.$field.prop('disabled', true);
             }
+        }
 
-            return $field;
-        },
-        set: function ($field, value) {
-            $field.prop('checked', value);
-        },
-        get: function ($field) {
-            return $field.prop('checked');
+        field() {
+            return this.$field;
+        }
+
+        get() {
+            return this.$field.prop('checked');
+        }
+
+        set(value) {
+            this.$field.prop('checked', !!value);
         }
     };
 })();
