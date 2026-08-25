@@ -7,8 +7,8 @@ use OranFry\Jars\Contract\Constants;
 class Router extends \OranFry\Subsimple\Router
 {
     protected static $routes = [
-        'POST /ajax/save' => [
-            'PAGE' => 'ledger/ajax/save',
+        'POST /save' => [
+            'PAGE' => 'ledger/save',
             'AUTHSCHEME' => 'cookie',
             'LAYOUT' => 'json',
         ],

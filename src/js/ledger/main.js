@@ -69,7 +69,7 @@
     };
 
     var saveLines = function(lines, differential, success) {
-        $.ajax(window.ledgerBaseUrl + '/ajax/save', {
+        $.ajax(window.ledgerBaseUrl + '/save', {
             method: 'post',
             contentType: false,
             processData: false,
@@ -557,7 +557,7 @@
             }
         }
 
-        $.ajax(window.ledgerBaseUrl + '/ajax/save', {
+        $.ajax(window.ledgerBaseUrl + '/save', {
             method: 'post',
             contentType: false,
             processData: false,
