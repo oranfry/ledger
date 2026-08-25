@@ -37,6 +37,10 @@ class Config
         return false;
     }
 
+    public function init(array $viewdata): void
+    {
+    }
+
     public function js(): void
     {
     }

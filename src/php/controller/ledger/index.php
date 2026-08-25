@@ -12,6 +12,8 @@ $ledger = Config::load(
     defined('LEDGER_CONFIG') ? LEDGER_CONFIG : null,
 );
 
+$ledger->init($viewdata);
+
 foreach (($variables = $ledger->variables()) as $variable) {
     ContextVariableSet::put($variable->prefix, $variable);
 }
