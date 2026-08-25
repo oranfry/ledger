@@ -2,13 +2,17 @@
 
 namespace OranFry\Ledger;
 
-use OranFry\Jars\Contract\Client as JarsClient;
 use OranFry\Subsimple\Config as SubsimpleConfig;
 
 class Config
 {
     public function __construct(array $viewdata)
     {
+    }
+
+    public function download(string $linetype_name, string $line_id, ?string $field_name): ?object
+    {
+        return null;
     }
 
     public function error(): ?string

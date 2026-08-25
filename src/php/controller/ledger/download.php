@@ -1,5 +1,14 @@
 <?php
 
-$file = $jars->record(TABLE_NAME, RECORD_ID, $content_type, $filename);
+use OranFry\Ledger\Config;
 
-return compact('file', 'content_type', 'filename');
+$ledger = Config::load(
+    $viewdata,
+    defined('LEDGER_CONFIG') ? LEDGER_CONFIG : null,
+);
+
+return (array) $ledger->download(
+    LINETYPE_NAME,
+    LINE_ID,
+    FIELD_NAME,
+);

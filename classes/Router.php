@@ -2,6 +2,8 @@
 
 namespace OranFry\Ledger;
 
+use OranFry\Jars\Contract\Constants;
+
 class Router extends \OranFry\Subsimple\Router
 {
     protected static $routes = [
@@ -11,12 +13,12 @@ class Router extends \OranFry\Subsimple\Router
             'LAYOUT' => 'json',
         ],
 
-        'GET /-download/([a-z]+)/([a-zA-Z0-9-]+)' => [
-            'AUTHSCHEME' => 'cookie',
-            'LAYOUT' => 'ledger/download',
+        'GET /-download/([a-z]+)/(' . Constants::ID_PATTERN . ')(?:/([0-9A-Za-z_-]+))?' => [
             'PAGE' => 'ledger/download',
-            0 => 'TABLE_NAME',
-            1 => 'RECORD_ID',
+            'LAYOUT' => 'ledger/download',
+            0 => 'LINETYPE_NAME',
+            1 => 'LINE_ID',
+            2 => 'FIELD_NAME',
         ],
 
         'GET /.*' => [
