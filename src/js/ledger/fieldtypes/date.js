@@ -35,7 +35,7 @@
         }
 
         get () {
-            return $field.val();
+            return this.$field.val();
         }
 
         set(value) {
