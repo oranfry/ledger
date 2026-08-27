@@ -8,15 +8,28 @@
             alert(data.responseJSON.error);
         }
 
-        let exception = data.responseJSON.exception ?? 'Unknown Exception';
-        let message = data.responseJSON.message ?? 'No message was given';
+        let exception = data.responseJSON.exception ?? data.responseJSON.private_exception ?? 'Unknown Exception';
+        let message = data.responseJSON.message ?? data.responseJSON.private_message ?? 'No message was given';
 
-        if (typeof data.responseJSON.private_message !== 'undefined') {
-            exception = data.responseJSON.private_exception;
-            message = data.responseJSON.private_message;
+        let pieces = [exception, message];
+
+        if (
+            typeof data.responseJSON.private_exception !== 'undefined'
+            && data.responseJSON.private_exception !== exception
+            && !!data.responseJSON.private_exception
+        ) {
+            pieces.push(data.responseJSON.private_exception);
         }
 
-        alert(exception + '\n\n' + message);
+        if (
+            typeof data.responseJSON.private_message !== 'undefined'
+            && data.responseJSON.private_message !== message
+            && !!data.responseJSON.private_message
+        ) {
+            pieces.push(data.responseJSON.private_message);
+        }
+
+        alert(pieces.join('\n\n'));
     };
 
     var clearInputs = function() {
@@ -68,7 +81,7 @@
         return null;
     };
 
-    var saveLines = function(lines, differential, success) {
+    var saveLines = function(lines, differential, success, error) {
         $.ajax(window.ledgerBaseUrl + '/save', {
             method: 'post',
             contentType: false,
@@ -76,7 +89,13 @@
             headers: prepareSaveHeaders(differential),
             data: JSON.stringify(lines),
             success: success,
-            error: alertException
+            error: function (data) {
+                alertException(data);
+
+                if (typeof error === 'function') {
+                    error(data);
+                }
+            }
         });
     };
 
@@ -331,7 +350,9 @@
     let saveLine = function(e) {
         e.preventDefault();
 
-        $(this).prop('disabled', true).addClass('disabled');
+        $(this)
+            .prop('disabled', true)
+            .addClass('disabled');
 
         let $line = $(this).closest('.line');
         let bulk = $line.data('bulk');
@@ -379,6 +400,8 @@
             lines.push(line);
         });
 
+        let that = this;
+
         var handleSave = function() {
             saveLines(lines, bulk, function(data, textStatus, request) {
                 if (typeof window.ledgerPostSave !== 'undefined') {
@@ -389,6 +412,10 @@
 
                 window.contextVariableSets.version = request.getResponseHeader('X-Version');
                 cvsApply();
+            }, function(data) {
+                $(that)
+                    .prop('disabled', false)
+                    .removeClass('disabled');
             });
         };
 
@@ -516,6 +543,10 @@
             saveLines(lines, false, function(data, textStatus, request) {
                 window.contextVariableSets.version = request.getResponseHeader('X-Version');
                 cvsApply();
+            }, function(data) {
+                $(that)
+                    .prop('disabled', false)
+                    .removeClass('disabled');
             });
         }
     };

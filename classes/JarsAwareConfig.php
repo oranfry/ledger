@@ -3,6 +3,8 @@
 namespace OranFry\Ledger;
 
 use OranFry\Jars\Contract\Client as JarsClient;
+use OranFry\Jars\Contract\LineValidationException;
+use OranFry\Subsimple\BadRequestException;
 
 class JarsAwareConfig extends Config
 {
@@ -60,6 +62,11 @@ class JarsAwareConfig extends Config
             }, $data)));
         }
 
-        return $this->jars->save($data, @getallheaders()['X-Base-Version']);
+        try {
+            return $this->jars->save($data, @getallheaders()['X-Base-Version']);
+        } catch (LineValidationException $lve) {
+            throw (new BadRequestException())
+                ->publicMessage($lve->getMessage());
+        }
     }
 }
