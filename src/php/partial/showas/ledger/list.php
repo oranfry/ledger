@@ -37,6 +37,8 @@ foreach ($fields as $field) {
     }
 }
 
+$addableAtTop = !($gi = $ledger->groupingInfo()) || count($gi->groupings) === 1 && reset($gi->groupings) === '';
+
 ?><table class="easy-table"><?php
     ?><thead><?php
         ?><tr><?php
@@ -63,7 +65,7 @@ foreach ($fields as $field) {
                 ?></th><?php
             }
 
-            if (!$ledger->groupingInfo()) {
+            if ($addableAtTop) {
                 ?><th class="right"><?php
                 ss_require('src/php/partial/snippets/addable.php', compact('ledger'));
                 ?></th><?php
@@ -75,7 +77,7 @@ foreach ($fields as $field) {
             unset($line);
 
             if ($i == count($lines)) {
-                if ($ledger->groupingInfo()) {
+                if (!$addableAtTop) {
                     $line = (object) [
                         '_grouping' => $seen_today ? null : $ledger->groupingInfo()->currentGrouping,
                     ];
@@ -88,71 +90,70 @@ foreach ($fields as $field) {
             }
 
             if (
-                @$summaries[@$lastgroup]
+                $hasSummaries
+                && ($summary = @$summaries[@$lastgroup])
                 && ($i == count($lines) || @$line->_grouping != $lastgroup)
+                && ($lastgroup !== 'initial' || !$addableAtTop)
             ) {
-                $summary = $summaries[$lastgroup];
                 $verified = @$verified_data[$lastgroup];
 
-                if ($hasSummaries) {
-                    ?><tr><?php
-                        foreach ($fields as $field) {
-                            $fieldName = explode('|', $field->name, 2)[0];
+                ?><tr><?php
+                    foreach ($fields as $field) {
+                        $fieldName = explode('|', $field->name, 2)[0];
 
-                            ?><td<?= $field->type == 'number' ? ' class="right"' : '' ?>><?php
-                                if ($fs = @$field->summary[0]) {
-                                    $alias = $fs->alias;
+                        ?><td<?= $field->type == 'number' ? ' class="right"' : '' ?>><?php
+                            if ($fs = @$field->summary[0]) {
+                                $alias = $fs->alias;
 
-                                    if ($correct = @$verified->$fieldName) {
-                                        if (@$summary->{$fs->alias} == $correct) {
-                                            $icon = 'tick';
-                                            $color = 'green';
-                                        } else {
-                                            $icon = 'times';
-                                            $color = 'red';
-                                        }
-
-                                        ?><i<?php
-                                        ?> class="icon icon--<?= $color ?> icon--<?= $icon ?>"<?php
-
-                                        if (@$summary->$fieldName != $correct) {
-                                            $delta = bcsub($correct, $summary->$fieldName ?? 0, 2);
-                                            ?> title="<?= $correct ?>    [Δ<?= $delta ?>]"<?php
-                                        }
-
-                                        ?>></i> <?php
+                                if ($correct = @$verified->$fieldName) {
+                                    if (@$summary->{$fs->alias} == $correct) {
+                                        $icon = 'tick';
+                                        $color = 'green';
+                                    } else {
+                                        $icon = 'times';
+                                        $color = 'red';
                                     }
 
-                                    ?><strong<?php
+                                    ?><i<?php
+                                    ?> class="icon icon--<?= $color ?> icon--<?= $icon ?>"<?php
 
-                                    if (count($field->summary) > 1) {
-                                        ?> title="<?php
-
-                                        foreach ($field->summary as $fsi => $fs) {
-                                            if ($fsi) {
-                                                echo "\n";
-                                            }
-
-                                            echo $fs->alias . ': ' . @$field->prefix . $summary->{$fs->alias};
-                                        }
-
-                                        ?>"<?php
+                                    if (@$summary->$fieldName != $correct) {
+                                        $delta = bcsub($correct, $summary->$fieldName ?? 0, 2);
+                                        ?> title="<?= $correct ?>    [Δ<?= $delta ?>]"<?php
                                     }
 
-                                    ?>><?php
-
-                                    echo @$field->prefix . $summary->$alias;
-
-                                    ?></strong><?php
+                                    ?>></i> <?php
                                 }
-                            ?></td><?php
-                        }
 
-                        if (!$ledger->groupingInfo()) {
-                            ?><td></td><?php
-                        }
-                    ?></tr><?php
-                }
+                                ?><strong<?php
+
+                                if (count($field->summary) > 1) {
+                                    ?> title="<?php
+
+                                    foreach ($field->summary as $fsi => $fs) {
+                                        if ($fsi) {
+                                            echo "\n";
+                                        }
+
+                                        echo $fs->alias . ': ' . @$field->prefix . $summary->{$fs->alias};
+                                    }
+
+                                    ?>"<?php
+                                }
+
+                                ?>><?php
+
+                                echo @$field->prefix . $summary->$alias;
+
+                                ?></strong><?php
+                            }
+                        ?></td><?php
+                    }
+
+                    if ($addableAtTop) {
+                        ?><td></td><?php
+                    }
+                ?></tr><?php
             }
 
             if (
@@ -220,7 +221,7 @@ foreach ($fields as $field) {
                         ?></td><?php
                     }
 
-                    if (!$ledger->groupingInfo()) {
+                    if ($addableAtTop) {
                         ?><td></td><?php
                     }
                 ?></tr><?php
