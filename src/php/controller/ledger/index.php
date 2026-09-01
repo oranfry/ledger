@@ -156,6 +156,8 @@ if ($groupingInfo) {
                     $summary->{$fs->alias} = match ($fs->scheme) {
                         'sum' => $_opening->{$field->name},
                         'average' => [],
+                        'max' => null,
+                        'min' => null,
                         default => '0.00',
                     };
                 }
@@ -166,27 +168,29 @@ if ($groupingInfo) {
             foreach ($field->summary as $fs) {
                 $alias = $fs->alias;
 
-                switch ($fs->scheme) {
-                    case 'sum':
-                        $_opening->$alias = bcadd($_opening->$alias, $line->{$field->name}, 2);
-                        // no break
-                    case 'groupsum':
-                        $summary->$alias = bcadd($summary->$alias, $line->{$field->name}, 2);
-                        break;
-                    case 'average':
-                        $summary->$alias[] = $line->{$field->name};
-                        break;
-                    case 'first':
-                        $summary->$alias ??= $line->{$field->name};
-                        break;
-                    case 'last':
-                        $summary->$alias = $line->{$field->name};
-                        break;
-                    case 'max':
-                        $summary->$alias = max($summary->$alias ?? -INF, $line->{$field->name});
-                        break;
-                    case 'min':
-                        $summary->$alias = min($summary->$alias ?? INF, $line->{$field->name});
+                if (isset($line->{$field->name})) {
+                    switch ($fs->scheme) {
+                        case 'sum':
+                            $_opening->$alias = bcadd($_opening->$alias, $line->{$field->name}, 2);
+                            // no break
+                        case 'groupsum':
+                            $summary->$alias = bcadd($summary->$alias, $line->{$field->name}, 2);
+                            break;
+                        case 'average':
+                            $summary->$alias[] = $line->{$field->name};
+                            break;
+                        case 'first':
+                            $summary->$alias ??= $line->{$field->name};
+                            break;
+                        case 'last':
+                            $summary->$alias = $line->{$field->name};
+                            break;
+                        case 'max':
+                            $summary->$alias = max($summary->$alias ?? -INF, $line->{$field->name});
+                            break;
+                        case 'min':
+                            $summary->$alias = min($summary->$alias ?? INF, $line->{$field->name});
+                    }
                 }
             }
         }
