@@ -107,6 +107,11 @@ class Config
         ];
     }
 
+    public function showasOverride(): ?string
+    {
+        return null;
+    }
+
     public function title(): string
     {
         return 'Ledger';

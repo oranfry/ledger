@@ -215,9 +215,13 @@ $generic = (object) array_map(fn ($values) => count($values) == 1 ? reset($value
 
 $showasOptions = $ledger->showas();
 $showas = reset($showasOptions);
+$showasOverride = $ledger->showasOverride();
 
 if (count($showasOptions) > 1) {
-    $showasCvs = new Showas('showas');
+    $showasCvs = new Showas('showas', [
+        'disabled' => (bool) $showasOverride,
+    ]);
+
     $showasCvs->options = $showasOptions;
 
     if (!$showasCvs->value) {
@@ -228,6 +232,8 @@ if (count($showasOptions) > 1) {
 
     ContextVariableSet::put('showas', $showasCvs);
 }
+
+$showas = $showasOverride ?? $showas;
 
 $error = $lines === null ? $ledger->error() : null;
 
