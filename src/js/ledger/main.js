@@ -610,7 +610,6 @@
             headers: prepareSaveHeaders(false),
             success: function(data, textStatus, request) {
                 window.contextVariableSets.version = request.getResponseHeader('X-Version');
-                window.contextVariableSets.raw__value = 0;
                 cvsApply();
             },
             error: alertException
