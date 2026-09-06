@@ -312,6 +312,8 @@ uksort($summaries, function ($a, $b) use ($groupings): int {
         ?: array_search($a, $groupings) <=> array_search($b, $groupings);
 });
 
+$title = $ledger->title();
+
 return compact(
     'baseUrl',
     'error',
@@ -323,5 +325,6 @@ return compact(
     'lines',
     'showas',
     'summaries',
+    'title',
     'verified_data',
 );

@@ -13,4 +13,3 @@ foreach ($vars as $var) {
         $var->display();
     ?></div><?php
 }
-
