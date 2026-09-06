@@ -88,11 +88,6 @@ class Config
         return '0.00';
     }
 
-    public function raw()
-    {
-        return $this->lines();
-    }
-
     public function save(array $data): array
     {
     }
