@@ -640,14 +640,8 @@
         return headers;
     };
 
-    var resizeTimer = null;
-
-    $(window).on('resize', function(){ clearTimeout(resizeTimer); resizeTimer = setTimeout(onResize, 300); });
-
     window.ledgerRefreshDisplayedLineEditor = refreshDisplayedLineEditor;
     window.ledgerOnResize = onResize;
-
-    $('.savelineraw').on('click', rawlineSave);
-
-    $lineContainer.on('click', deselectAllLines);
+    window.ledgerDeselectAllLines = deselectAllLines;
+    window.ledgerRawlineSave = rawlineSave;
 })();
