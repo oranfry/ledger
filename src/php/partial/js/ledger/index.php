@@ -20,7 +20,7 @@ echo '<script>';
     ?>window.ledgerResizeTimer = null;<?php
     ?>$(window).on('resize', function(){ clearTimeout(window.ledgerResizeTimer); window.ledgerResizeTimer = setTimeout(window.ledgerOnResize, 300); });<?php
     ?>$('.savelineraw').on('click', window.ledgerRawlineSave);<?php
-    ?>$lineContainer.on('click', window.ledgerDeselectAllLines);<?php
+    ?>$('#line-container').on('click', window.ledgerDeselectAllLines);<?php
     ?>ledgerOnResize();<?php
     ?>ledgerRefreshDisplayedLineEditor();<?php
     ?>softCvsApply();<?php
