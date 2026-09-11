@@ -255,4 +255,4 @@ if ($underTableItems = $ledger->underTableItems($viewdata)) {
 
 ?><br><br><?php
 
-?><div id="line-container"></div><?php
+?><div id="line-container" style="display: none"></div><?php
