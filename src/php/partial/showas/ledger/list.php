@@ -37,7 +37,7 @@ foreach ($fields as $field) {
     }
 }
 
-$addableAtTop = !($gi = $ledger->groupingInfo()) || count($gi->groupings) === 1 && reset($gi->groupings) === '';
+$addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($groupings) === '';
 
 ?><table class="easy-table"><?php
     ?><thead><?php
