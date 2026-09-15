@@ -99,6 +99,7 @@ class Config
             'summaries',
             'stats',
             'graph',
+            'raw',
         ];
     }
 
