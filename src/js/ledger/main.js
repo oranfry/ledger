@@ -397,6 +397,12 @@
                 });
             }
 
+            for (key in line) {
+                if (line[key] === '') {
+                    line[key] = null;
+                }
+            }
+
             lines.push(line);
         });
 
