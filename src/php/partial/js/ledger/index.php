@@ -7,6 +7,7 @@ echo '<script>';
     ?>window.linetypes = <?= json_encode(Obex::key($ledger->linetypes(), 'name')) ?>;<?php
     ?>window.lines = <?= json_encode($lines) ?>;<?php
     ?>window.ledgerBaseUrl = '<?= $baseUrl ?>';<?php
+    ?>window.toolsBaseUrl = '<?= defined('TOOLS_BASE_URL') ? TOOLS_BASE_URL : null ?>';<?php
     ?>window.toolsPluginMountPoint = '<?= TOOLS_PLUGIN_MOUNT_POINT ?>';<?php
 
     $ledger->js();
