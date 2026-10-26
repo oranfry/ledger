@@ -498,7 +498,7 @@
         event.preventDefault();
 
         deselectAllLines();
-        closeModals();
+        tools.closeModals();
 
         let $plus = $(this);
         let linetype = window.linetypes[$plus.attr('data-type')];
