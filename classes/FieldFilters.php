@@ -4,13 +4,13 @@ namespace OranFry\Ledger;
 
 class FieldFilters
 {
-    static function apply(?string $value, ?string $pipeline): ?string
+    static function apply(?string $value, array $pipeline): ?string
     {
         if (!$pipeline) {
             return $value;
         }
 
-        foreach (explode('|', $pipeline) as $filter) {
+        foreach ($pipeline as $filter) {
             $value = self::applyOne($value, $filter);
         }
 
@@ -33,8 +33,28 @@ class FieldFilters
         return self::$method($value, ...$arguments);
     }
 
+    static function bareFieldName(string $fieldDefinition): string
+    {
+        return self::splitFieldDefinition($fieldDefinition)[0];
+    }
+
     static function filter_start(?string $value, $length): string
     {
         return substr($value ?? '', 0, intval($length));
+    }
+
+    static function pipeline(string $fieldDefinition): array
+    {
+        return self::splitFieldDefinition($fieldDefinition)[1];
+    }
+
+    static function splitFieldDefinition(string $fieldDefinition): array
+    {
+        @[$fieldName, $pipeline] = explode('|', $fieldDefinition, 2);
+
+        return [
+            $fieldName,
+            @$pipeline ? explode('|', $pipeline) : [],
+        ];
     }
 }

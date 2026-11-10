@@ -43,7 +43,7 @@ $addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($gr
     ?><thead><?php
         ?><tr><?php
             foreach ($fields as $field) {
-                $fieldName = explode('|', $field->name, 2)[0];
+                $fieldName = FieldFilters::bareFieldName($field->name);
                 $alias = $field->alias ?? $fieldName;
 
                 ?><th<?php
@@ -76,30 +76,30 @@ $addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($gr
         for ($i = 0; $i <= count($lines); $i++) {
             unset($line);
 
-            if ($i == count($lines)) {
+            if ($i === count($lines)) {
                 if (!$addableAtTop) {
-                    $line = (object) [
-                        '_grouping' => $seen_today ? null : $ledger->groupingInfo()->currentGrouping,
-                    ];
+                    $line = (object) [];
+                    $lineGrouping = $seen_today ? null : $ledger->groupingInfo()->currentGrouping;
                 }
 
                 $skip = true;
             } else {
                 $line = $lines[$i];
+                $lineGrouping = @$lineMetas[$i]['grouping'];
                 $skip = (bool) @$line->_skip;
             }
 
             if (
                 $hasSummaries
                 && ($summary = @$summaries[@$lastgroup])
-                && ($i == count($lines) || @$line->_grouping != $lastgroup)
+                && ($i == count($lines) || $lineGrouping != $lastgroup)
                 && ($lastgroup !== 'initial' || !$addableAtTop)
             ) {
                 $verified = @$verified_data[$lastgroup];
 
                 ?><tr><?php
                     foreach ($fields as $field) {
-                        $fieldName = explode('|', $field->name, 2)[0];
+                        $fieldName = FieldFilters::bareFieldName($field->name);
 
                         ?><td<?= $field->type == 'number' ? ' class="right"' : '' ?>><?php
                             if ($fs = @$field->summary[0]) {
@@ -158,11 +158,12 @@ $addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($gr
 
             if (
                 $ledger->groupingInfo()
-                && ($i == count($lines) || $line->_grouping != $lastgroup)
+                && ($i == count($lines) || $lineGrouping !== $lastgroup)
             ) {
-                if (!$seen_today && strcmp($ledger->groupingInfo()->currentGrouping, $line->_grouping) < 0) {
+                if (!$seen_today && strcmp($ledger->groupingInfo()->currentGrouping, $lineGrouping) < 0) {
                     unset($line);
-                    $line = (object) ['_grouping' => $ledger->groupingInfo()->currentGrouping];
+                    $line = (object) [];
+                    $lineGrouping = $ledger->groupingInfo()->currentGrouping;
                     $i--;
                     $skip = true;
                 }
@@ -172,12 +173,12 @@ $addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($gr
                     ?><tbody><?php
                 }
 
-                if (@$line->_grouping) {
-                    ?><tr class="<?= strcmp($line->_grouping, $ledger->groupingInfo()->currentGrouping ?? '') ? '' : 'today' ?>"><?php
-                        $grouptitle = $line->_grouping;
+                if ($lineGrouping) {
+                    ?><tr class="<?= strcmp($lineGrouping, $ledger->groupingInfo()->currentGrouping ?? '') ? '' : 'today' ?>"><?php
+                        $grouptitle = $lineGrouping;
 
                         if (@$ledger->groupingInfo()->daylink) {
-                            $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($ledger->groupingInfo()->daylink)($line->_grouping) . '&back=' . base64_encode($_SERVER['REQUEST_URI']);
+                            $grouphref = strtok($_SERVER['REQUEST_URI'], '?') . '?' . ($ledger->groupingInfo()->daylink)($lineGrouping) . '&back=' . base64_encode($_SERVER['REQUEST_URI']);
                             $grouptitle = "<a class=\"incog\" href=\"$grouphref\">$grouptitle</a>";
                         }
 
@@ -195,15 +196,15 @@ $addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($gr
                 ?><tr<?php
                     echo @$parent ? " data-parent=\"$parent\"" : '';
 
-                    ?> data-group="<?= @$line->_grouping ?>"<?php
+                    ?> data-group="<?= $lineGrouping ?>"<?php
                     ?> class="linerow <?= @$line->broken ? 'broken' : null ?>"<?php
                     ?> data-id="<?= $line->id ?>"<?php
                     ?> data-type="<?= $line->type ?>"<?php
                 ?>><?php
                     foreach ($fields as $field) {
-                        @[$fieldName, $pipeline] = explode('|', $field->name, 2);
+                        [$fieldName, $pipeline] = FieldFilters::splitFieldDefinition($field->name);
 
-                        $value = FieldFilters::apply(@$line->$fieldName, $pipeline . ($pipeline ? '|' : null) . 'start(50)');
+                        $value = FieldFilters::apply(@$line->$fieldName, [...$pipeline, 'start(50)']);
 
                         ?><td data-name="<?= $fieldName ?>" data-value="<?= htmlspecialchars($value ?? '') ?>" style="<?= $field->type == 'number' ? 'text-align: right;' : null ?>"><?php
                             if ($value && $limit = @$field->width_limit) {
@@ -227,7 +228,7 @@ $addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($gr
                 ?></tr><?php
             }
 
-            $lastgroup = @$line->_grouping;
+            $lastgroup = $lineGrouping;
             $seen_today = $seen_today || ($lastgroup ?? '') == $ledger->groupingInfo()->currentGrouping;
         }
     ?></tbody><?php

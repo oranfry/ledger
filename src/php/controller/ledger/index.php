@@ -2,8 +2,9 @@
 
 use OranFry\ContextVariableSets\ContextVariableSet;
 use OranFry\Ledger\Config;
-use OranFry\Obex\Obex;
 use OranFry\Ledger\ContextVariableSets\Showas;
+use OranFry\Ledger\FieldFilters;
+use OranFry\Obex\Obex;
 
 $baseUrl = implode('', EATENS);
 
@@ -33,7 +34,7 @@ foreach (($variables = $ledger->variables()) as $variable) {
 // }
 
 $fields = $ledger->fields();
-$generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, 'name')));
+$generic_builder = array_map(fn () => [], array_flip(Obex::map($fields, fn ($field) => FieldFilters::bareFieldName($field->name))));
 $_opening = (object) [];
 $summaries = [];
 $graphfields = [];
@@ -100,16 +101,17 @@ foreach ($fields as $field) {
 $groupingInfo = $ledger->groupingInfo();
 $lines = $ledger->lines();
 
-$groupings = $groupingInfo->groupings ?? [];
+$groupings = array_values(array_unique($groupingInfo->groupings ?? []));
 
 // fill gaps with null and build the generic
 
 foreach ($lines ?? [] as $line) {
     foreach ($fields as $field) {
-        $line->{$field->name} ??= null;
+        $fieldName = FieldFilters::bareFieldName($field->name);
+        $line->$fieldName ??= null;
 
-        if (count($generic_builder[$field->name]) < 2 && !in_array($line->{$field->name}, $generic_builder[$field->name])) {
-            $generic_builder[$field->name][] = $line->{$field->name};
+        if (count($generic_builder[$fieldName]) < 2 && !in_array($line->$fieldName, $generic_builder[$fieldName])) {
+            $generic_builder[$fieldName][] = $line->$fieldName;
         }
     }
 }
@@ -313,6 +315,12 @@ uksort($summaries, function ($a, $b) use ($groupings): int {
 });
 
 $title = $ledger->title();
+$lineMetas = [];
+
+foreach ($lines as $i => $line) {
+    $lineMetas[$i]['grouping'] = $line->_grouping;
+    unset($line->_grouping);
+}
 
 return compact(
     'baseUrl',
@@ -323,6 +331,7 @@ return compact(
     'groupings',
     'ledger',
     'lines',
+    'lineMetas',
     'showas',
     'summaries',
     'title',
