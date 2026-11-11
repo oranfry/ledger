@@ -38,6 +38,7 @@ foreach ($fields as $field) {
 }
 
 $addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($groupings) === '';
+$lineGrouping = null;
 
 ?><table class="easy-table"><?php
     ?><thead><?php
@@ -67,7 +68,7 @@ $addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($gr
 
             if ($addableAtTop) {
                 ?><th class="right"><?php
-                ss_require('src/php/partial/snippets/addable.php', compact('ledger'));
+                    ss_require('src/php/partial/snippets/addable.php', compact('ledger', 'lineGrouping'));
                 ?></th><?php
             }
         ?></tr><?php
@@ -191,7 +192,7 @@ $addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($gr
                             echo $grouptitle;
                         ?></td><?php
                         ?><td class="right"><?php
-                            ss_require('src/php/partial/snippets/addable.php', compact('ledger'));
+                            ss_require('src/php/partial/snippets/addable.php', compact('ledger', 'lineGrouping'));
                         ?></td><?php
                     ?></tr><?php
                 }

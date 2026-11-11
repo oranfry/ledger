@@ -503,15 +503,15 @@
         let $plus = $(this);
         let linetype = window.linetypes[$plus.attr('data-type')];
         let $line = createLine(linetype);
+        let prepop = JSON.parse($plus.attr('data-prepop') || $plus.parent().attr('data-prepop') || '{}');
 
         $.each(linetype.fields, function() {
             let $row = $line.find('[data-field-name="' + this.name + '"]');
-            let value = $plus.attr('data-' + this.name);
 
             $row.find('.includeme').prop('checked', !this.readonly);
 
-            if (value) {
-                $row.data('field').set(value);
+            if (prepop[this.name]) {
+                $row.data('field').set(prepop[this.name]);
             }
         });
 
