@@ -77,9 +77,14 @@ $addableAtTop = !$ledger->groupingInfo() || count($groupings) === 1 && reset($gr
             unset($line);
 
             if ($i === count($lines)) {
+                $lineGrouping = null;
+
                 if (!$addableAtTop) {
                     $line = (object) [];
-                    $lineGrouping = $seen_today ? null : $ledger->groupingInfo()->currentGrouping;
+
+                    if (!$seen_today) {
+                        $lineGrouping = $ledger->groupingInfo()->currentGrouping;
+                    }
                 }
 
                 $skip = true;
